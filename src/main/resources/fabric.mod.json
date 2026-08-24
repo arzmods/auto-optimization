@@ -1,3 +1,4 @@
+{
   "schemaVersion": 1,
   "id": "hardwarescaler",
   "version": "1.0.0",
@@ -10,9 +11,6 @@
       "com.hwscaler.HardwareScalerClient"
     ]
   },
-  "mixins": [
-    "hardwarescaler.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=0.19.0",
     "minecraft": "*",
