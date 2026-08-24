@@ -10,8 +10,8 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
-      - name: Install Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.12
+      - name: Setup Gradle 9.5.1 Wrapper
+        run: gradle wrapper --gradle-version 9.5.1
       - name: Build Mod File Package
         run: ./gradlew build --no-daemon
       - name: Upload Finished Jar File
@@ -19,3 +19,4 @@ jobs:
         with:
           name: auto-optimization-mod
           path: build/libs/*.jar
+        
