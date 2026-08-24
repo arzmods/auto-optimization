@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "hardwarescaler",
+  "version": "1.0.0",
+  "name": "Hardware Scaler",
+  "description": "Automated Hardware Presets for Sodium",
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.example.hardwarescaler.ConfigManager"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.5",
+    "minecraft": "~26.2"
+  }
+}
