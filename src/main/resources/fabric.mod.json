@@ -1,18 +1,21 @@
-{
   "schemaVersion": 1,
   "id": "hardwarescaler",
   "version": "1.0.0",
   "name": "Hardware Scaler",
-  "description": "Automated Hardware Presets for Sodium",
-  "license": "MIT",
+  "description": "Detects system hardware and applies tiered performance presets.",
+  "authors": ["arzmods"],
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.example.hardwarescaler.ConfigManager"
+      "com.hwscaler.HardwareScalerClient"
     ]
   },
+  "mixins": [
+    "hardwarescaler.mixins.json"
+  ],
   "depends": {
-    "fabricloader": ">=0.16.5",
-    "minecraft": "~26.2"
+    "fabricloader": ">=0.19.0",
+    "minecraft": "*",
+    "java": ">=25"
   }
 }
