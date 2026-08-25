@@ -14,9 +14,9 @@ dependencies {
 	minecraft "com.mojang:minecraft:26.2"
 	implementation "net.fabricmc:fabric-loader:0.19.3"
 
-	include implementation("com.github.oshi:oshi-core:6.6.5")
-	include implementation("net.java.dev.jna:jna:5.14.0")
-	include implementation("net.java.dev.jna:jna-platform:5.14.0")
+	   include implementation("com.github.oshi:oshi-core:6.9.0")
+   include implementation("net.java.dev.jna:jna:5.17.0")
+   include implementation("net.java.dev.jna:jna-platform:5.17.0")
 }
 
 tasks.withType(JavaCompile).configureEach {
