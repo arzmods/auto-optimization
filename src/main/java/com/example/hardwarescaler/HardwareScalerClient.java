@@ -1,4 +1,3 @@
-java
 package com.example.hardwarescaler;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -57,14 +56,3 @@ public class HardwareScalerClient implements ClientModInitializer {
         }
     }
 }
-Steps:
-
-In that hardwarescaler folder, click "Add file" → "Create new file"
-Type the filename: HardwareScalerClient.java
-Paste the code above into the box
-Scroll down, click "Commit changes..." → confirm
-That's it — no more back-and-forth needed on this piece. It will build, load, and print detected hardware + tier to your log without crashing.
-
-
-
-You’ve used 90% of your session limit
