@@ -8,7 +8,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.hwscaler.HardwareScalerClient"
+        "com.example.hardwarescaler.HardwareScalerClient"
     ]
   },
   "depends": {
