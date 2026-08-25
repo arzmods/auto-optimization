@@ -2,7 +2,7 @@ package com.example.hardwarescaler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options.ParticleStatus;
+
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.CentralProcessor;
@@ -94,6 +94,29 @@ public class HardwareScalerClient implements ClientModInitializer {
     }
 
     private void applyPreset(Tier tier) {
+    Minecraft client = Minecraft.getInstance();
+    if (client == null || client.options == null) {
+        System.out.println("[HardwareScaler] Client not ready yet, skipping preset application");
+        return;
+    }
+
+    switch (tier) {
+        case LOW:
+            client.options.renderDistance().set(6);
+            System.out.println("[HardwareScaler] Applying LOW preset (render distance 6)");
+            break;
+        case MEDIUM:
+            client.options.renderDistance().set(10);
+            System.out.println("[HardwareScaler] Applying MEDIUM preset (render distance 10)");
+            break;
+        case HIGH:
+            client.options.renderDistance().set(16);
+            System.out.println("[HardwareScaler] Applying HIGH preset (render distance 16)");
+            break;
+    }
+
+    client.options.save();
+}
         Minecraft client = Minecraft.getInstance();
         if (client == null || client.options == null) {
             System.out.println("[HardwareScaler] Client not ready yet, skipping preset application");
