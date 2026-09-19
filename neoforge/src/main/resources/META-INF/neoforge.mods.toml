@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "All rights reserved"
+issueTrackerURL = "https://github.com/arzmods/auto-optimization/issues"
+
+[[mods]]
+modId = "hardwarescaler"
+version = "1.0.0"
+displayName = "Hardware Scaler"
+authors = "arzmods"
+description = '''Detects system hardware and applies tiered performance presets.'''
+
+[[dependencies.hardwarescaler]]
+modId = "neoforge"
+type = "required"
+versionRange = "[26.3,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.hardwarescaler]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.3,)"
+ordering = "NONE"
+side = "CLIENT"

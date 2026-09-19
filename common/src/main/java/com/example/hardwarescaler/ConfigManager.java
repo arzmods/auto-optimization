@@ -3,16 +3,29 @@ package com.example.hardwarescaler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.fabricmc.loader.api.FabricLoader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File MOD_CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "hardwarescaler.json");
-    private static final File SODIUM_CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "sodium-options.json");
+    // Set once at startup by whichever loader is running: Fabric hands us
+    // FabricLoader's config dir, NeoForge hands us FMLPaths.CONFIGDIR.
+    private static Path configDir = Path.of("config");
+
+    public static void setConfigDir(Path dir) {
+        configDir = dir;
+    }
+
+    private static File modConfigFile() {
+        return new File(configDir.toFile(), "hardwarescaler.json");
+    }
+
+    private static File sodiumConfigFile() {
+        return new File(configDir.toFile(), "sodium-options.json");
+    }
 
     public static class StoredSpecs {
         public String lastGpu = "";
@@ -22,8 +35,8 @@ public class ConfigManager {
     }
 
     public static StoredSpecs loadConfig() {
-        if (!MOD_CONFIG_FILE.exists()) return new StoredSpecs();
-        try (FileReader reader = new FileReader(MOD_CONFIG_FILE)) {
+        if (!modConfigFile().exists()) return new StoredSpecs();
+        try (FileReader reader = new FileReader(modConfigFile())) {
             return GSON.fromJson(reader, StoredSpecs.class);
         } catch (IOException e) {
             return new StoredSpecs();
@@ -36,7 +49,7 @@ public class ConfigManager {
         specs.lastCpu = cpu;
         specs.lastRam = ram;
         specs.hasInitialized = true;
-        try (FileWriter writer = new FileWriter(MOD_CONFIG_FILE)) {
+        try (FileWriter writer = new FileWriter(modConfigFile())) {
             GSON.toJson(specs, writer);
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,8 +58,8 @@ public class ConfigManager {
 
     public static void applyOptimizationPresets(String tierName) {
         JsonObject sodiumJson = new JsonObject();
-        if (SODIUM_CONFIG_FILE.exists()) {
-            try (FileReader reader = new FileReader(SODIUM_CONFIG_FILE)) {
+        if (sodiumConfigFile().exists()) {
+            try (FileReader reader = new FileReader(sodiumConfigFile())) {
                 sodiumJson = GSON.fromJson(reader, JsonObject.class);
             } catch (Exception e) {
                 sodiumJson = new JsonObject();
@@ -84,7 +97,7 @@ public class ConfigManager {
             videoOptions.addProperty("quality_preset", "ULTRA");
         }
 
-        try (FileWriter writer = new FileWriter(SODIUM_CONFIG_FILE)) {
+        try (FileWriter writer = new FileWriter(sodiumConfigFile())) {
             GSON.toJson(sodiumJson, writer);
         } catch (IOException e) {
             e.printStackTrace();

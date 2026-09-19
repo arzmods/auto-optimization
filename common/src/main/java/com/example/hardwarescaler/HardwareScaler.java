@@ -1,8 +1,5 @@
-
 package com.example.hardwarescaler;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.Minecraft;
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
@@ -12,14 +9,19 @@ import oshi.hardware.GraphicsCard;
 
 import java.util.List;
 
-public class HardwareScalerClient implements ClientModInitializer {
+/**
+ * Hardware detection and preset logic. Loader-agnostic: compiled into both the
+ * Fabric and the NeoForge jar so the two behave identically.
+ */
+public final class HardwareScaler {
 
     public enum Tier {
         LOW, MEDIUM, HIGH
     }
 
-    @Override
-    public void onInitializeClient() {
+    private HardwareScaler() {}
+
+    public static Tier detect() {
         SystemInfo systemInfo = new SystemInfo();
         HardwareAbstractionLayer hardware = systemInfo.getHardware();
 
@@ -40,10 +42,10 @@ public class HardwareScalerClient implements ClientModInitializer {
         System.out.println("[HardwareScaler] GPU: " + gpuName + " (discrete: " + hasDiscreteGpu + ")");
         System.out.println("[HardwareScaler] Assigned performance tier: " + tier);
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> applyPreset(tier));
+        return tier;
     }
 
-    private boolean hasDiscreteGpu(List<GraphicsCard> gpus) {
+    public static boolean hasDiscreteGpu(List<GraphicsCard> gpus) {
         for (GraphicsCard gpu : gpus) {
             String name = gpu.getName().toLowerCase();
             if (name.contains("intel") && (name.contains("hd") || name.contains("uhd") || name.contains("iris"))) {
@@ -63,7 +65,7 @@ public class HardwareScalerClient implements ClientModInitializer {
         return false;
     }
 
-    private Tier detectTier(int cpuCores, long totalRamGB, boolean hasDiscreteGpu) {
+    public static Tier detectTier(int cpuCores, long totalRamGB, boolean hasDiscreteGpu) {
         int score = 0;
 
         if (cpuCores >= 12) score += 3;
@@ -86,7 +88,7 @@ public class HardwareScalerClient implements ClientModInitializer {
         }
     }
 
-    private void applyPreset(Tier tier) {
+    public static void applyPreset(Tier tier) {
         Minecraft client = Minecraft.getInstance();
         if (client == null || client.options == null) {
             System.out.println("[HardwareScaler] Client not ready yet, skipping preset application");

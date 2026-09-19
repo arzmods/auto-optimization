@@ -1,0 +1,18 @@
+plugins {
+	id 'net.fabricmc.fabric-loom'
+}
+
+base {
+	archivesName = "${archives_base_name}-fabric"
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+	// Bundled into the jar so players do not have to install them separately.
+	include implementation("com.github.oshi:oshi-core:${oshi_version}")
+	include implementation("net.java.dev.jna:jna:${jna_version}")
+	include implementation("net.java.dev.jna:jna-platform:${jna_version}")
+}

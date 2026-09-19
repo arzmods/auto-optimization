@@ -1,0 +1,22 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		maven {
+			name = 'NeoForged'
+			url = 'https://maven.neoforged.net/releases'
+		}
+		gradlePluginPortal()
+	}
+	plugins {
+		id 'net.fabricmc.fabric-loom' version "${loom_version}"
+		id 'net.neoforged.moddev' version "${moddev_version}"
+	}
+}
+
+rootProject.name = 'auto-optimization'
+
+include 'fabric'
+include 'neoforge'
