@@ -22,27 +22,25 @@ neoForge {
 	}
 }
 
-jarJar.enable()
-
 dependencies {
 	// Bundled into the jar so players do not have to install them separately.
 	// NeoForge's Jar-in-Jar requires version ranges, with a preferred version.
 	jarJar(implementation("com.github.oshi:oshi-core")) {
 		version {
-			prefer "[${oshi_version},7.0.0)"
-			require "${oshi_version}"
+			strictly "[${oshi_version},7.0.0)"
+			prefer "${oshi_version}"
 		}
 	}
 	jarJar(implementation("net.java.dev.jna:jna")) {
 		version {
-			prefer "[${jna_version},6.0.0)"
-			require "${jna_version}"
+			strictly "[${jna_version},6.0.0)"
+			prefer "${jna_version}"
 		}
 	}
 	jarJar(implementation("net.java.dev.jna:jna-platform")) {
 		version {
-			prefer "[${jna_version},6.0.0)"
-			require "${jna_version}"
+			strictly "[${jna_version},6.0.0)"
+			prefer "${jna_version}"
 		}
 	}
 }
