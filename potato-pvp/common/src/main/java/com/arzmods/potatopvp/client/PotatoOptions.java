@@ -3,10 +3,9 @@ package com.arzmods.potatopvp.client;
 import com.arzmods.potatopvp.PotatoConfig;
 import com.arzmods.potatopvp.PotatoPvP;
 import com.arzmods.potatopvp.QualityLevel;
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.ParticleStatus;
+import net.minecraft.server.level.ParticleStatus;
 
 /**
  * Pushes the three Potato PvP settings down into Minecraft's own video options.
@@ -51,12 +50,10 @@ public final class PotatoOptions {
         switch (level) {
             case NONE, MINIMUM -> {
                 options.mipmapLevels().set(0);
-                options.graphicsMode().set(GraphicsStatus.FAST);
                 options.ambientOcclusion().set(false);
             }
             case MEDIUM -> {
                 options.mipmapLevels().set(1);
-                options.graphicsMode().set(GraphicsStatus.FAST);
                 options.ambientOcclusion().set(true);
             }
         }

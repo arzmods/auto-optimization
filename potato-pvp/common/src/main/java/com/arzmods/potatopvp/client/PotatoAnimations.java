@@ -2,7 +2,7 @@ package com.arzmods.potatopvp.client;
 
 import com.arzmods.potatopvp.PotatoConfig;
 import com.arzmods.potatopvp.QualityLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Decides which block textures are still allowed to animate.
@@ -27,7 +27,7 @@ public final class PotatoAnimations {
     /**
      * @return true if this sprite may keep its animation ticker
      */
-    public static boolean allowsAnimation(ResourceLocation name) {
+    public static boolean allowsAnimation(Identifier name) {
         QualityLevel level = PotatoConfig.animations();
 
         if (level == QualityLevel.NONE) {

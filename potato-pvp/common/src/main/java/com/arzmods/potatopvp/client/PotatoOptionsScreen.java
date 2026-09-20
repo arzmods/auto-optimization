@@ -98,7 +98,7 @@ public class PotatoOptionsScreen extends Screen {
             if (PotatoConfig.textures() != this.texturesOnOpen) {
                 this.minecraft.reloadResourcePacks();
             }
-            this.minecraft.setScreen(this.parent);
+            this.minecraft.setScreenAndShow(this.parent);
         }
     }
 

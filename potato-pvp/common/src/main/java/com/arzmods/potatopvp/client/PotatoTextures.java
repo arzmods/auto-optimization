@@ -3,7 +3,7 @@ package com.arzmods.potatopvp.client;
 import com.arzmods.potatopvp.PotatoPvP;
 import com.arzmods.potatopvp.QualityLevel;
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -54,7 +54,7 @@ public final class PotatoTextures {
      * @param image       the decoded png, modified in place
      * @param level       how much detail to keep
      */
-    public static void degrade(ResourceLocation name, int frameWidth, int frameHeight, NativeImage image, QualityLevel level) {
+    public static void degrade(Identifier name, int frameWidth, int frameHeight, NativeImage image, QualityLevel level) {
         if (image == null || frameWidth <= 0 || frameHeight <= 0) {
             return;
         }
@@ -144,7 +144,7 @@ public final class PotatoTextures {
         };
     }
 
-    private static boolean affects(ResourceLocation name) {
+    private static boolean affects(Identifier name) {
         if (name == null) {
             return false;
         }

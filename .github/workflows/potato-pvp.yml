@@ -77,33 +77,37 @@ jobs:
         working-directory: potato-pvp/neoforge
         run: gradle -q apiJars --no-daemon || true
 
-      - name: Core classes
+      - name: Find the renamed classes
         working-directory: potato-pvp/neoforge
         run: |
           gradle -q apiClasses --no-daemon \
-            -PclassContains=resourcelocation,identifier,guigraphics,drawcontext || true
+            -PclassContains=graphicspreset,guigraphic,rendercontext,drawcontext,particlerender,inputconstants,keycode || true
 
-      - name: Texture and particle classes
+      - name: Screen and CycleButton
         working-directory: potato-pvp/neoforge
         run: |
-          gradle -q apiClasses --no-daemon \
-            -PclassContains=spritecontents,spriteticker,nativeimage,particlestatus,graphicsstatus || true
+          gradle -q apiMethods --no-daemon \
+            '-PtypeNames=net.minecraft.client.gui.screens.Screen,net.minecraft.client.gui.components.CycleButton,net.minecraft.client.gui.components.CycleButton$Builder' \
+            | grep -iE '====|MISSING|CTOR|render|create|builder|withValues|withInitial|onClose|setScreen' || true
 
-      - name: Widget and input classes
+      - name: SpriteContents - the animation hook
         working-directory: potato-pvp/neoforge
         run: |
-          gradle -q apiClasses --no-daemon \
-            -PclassContains=cyclebutton,keymapping,particleengine,gamerenderer || true
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=net.minecraft.client.renderer.texture.SpriteContents || true
 
-      - name: Minecraft - screen handling
+      - name: ParticleEngine and GameRenderer
         working-directory: potato-pvp/neoforge
         run: |
-          gradle -q apiMethods --no-daemon -PtypeNames=net.minecraft.client.Minecraft \
-            | grep -iE '====|MISSING|screen|overlay|reload' || true
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=net.minecraft.client.particle.ParticleEngine,net.minecraft.client.renderer.GameRenderer \
+            | grep -iE '====|MISSING|CTOR|particle|add|item|activation' || true
 
-      - name: Options - every setting
+      - name: KeyMapping and the NeoForge event annotation
         working-directory: potato-pvp/neoforge
-        run: gradle -q apiMethods --no-daemon -PtypeNames=net.minecraft.client.Options || true
+        run: |
+          gradle -q apiMethods --no-daemon \
+            '-PtypeNames=net.minecraft.client.KeyMapping,net.minecraft.client.KeyMapping$Category,com.mojang.blaze3d.platform.InputConstants,net.neoforged.fml.common.EventBusSubscriber' || true
 
   fabric:
     name: Build Fabric

@@ -4,7 +4,7 @@ import com.arzmods.potatopvp.PotatoConfig;
 import com.arzmods.potatopvp.QualityLevel;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Set;
 
@@ -135,7 +135,7 @@ public final class ParticleFilter {
     /** Registry path of the particle type, or null if it cannot be resolved. */
     private static String pathOf(ParticleOptions options) {
         try {
-            ResourceLocation id = BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType());
+            Identifier id = BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType());
             return id == null ? null : id.getPath();
         } catch (Throwable ignored) {
             // Registries are not always ready this early; treat as unknown.
