@@ -52,7 +52,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
-    withSourcesJar()
+    // No sources jar. Loom remaps one into the "named" namespace, and with
+    // intermediary-only mappings that namespace does not exist, so the task
+    // fails. The mod jar itself remaps fine, and a sources jar would be
+    // meaningless for a game that ships with its real names anyway.
 }
 
 tasks.withType(JavaCompile).configureEach {

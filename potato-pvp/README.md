@@ -154,8 +154,9 @@ cd potato-pvp/neoforge
 ```
 
 The finished jar lands in `potato-pvp/fabric/build/libs/` or
-`potato-pvp/neoforge/build/libs/`.
-Ignore any file ending in `-sources.jar`.
+`potato-pvp/neoforge/build/libs/`. Ignore any file ending in
+`-sources.jar`, and on the Fabric side ignore `-dev.jar` too - the one you
+want is the plain `potato-pvp-fabric-1.0.0.jar`.
 
 The first build downloads Minecraft and the loader and takes a few minutes.
 Later builds are fast.
