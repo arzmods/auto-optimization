@@ -1,0 +1,105 @@
+name: Potato PvP
+
+# Only runs when the Potato PvP folder changes, so it stays out of the way of
+# the Auto Optimization build at the repo root.
+on:
+  push:
+    paths:
+      - 'potato-pvp/**'
+      - '.github/workflows/potato-pvp.yml'
+  pull_request:
+    paths:
+      - 'potato-pvp/**'
+  workflow_dispatch:
+
+env:
+  MINECRAFT_VERSION: "26.3"
+  GRADLE_VERSION: "9.5.1"
+
+jobs:
+  # Runs first and never fails. The build machine can reach the Fabric and
+  # NeoForge mavens, so this prints the version numbers that actually exist for
+  # this Minecraft version - handy when a build breaks after a Minecraft update.
+  discover-versions:
+    name: Which versions exist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Minecraft versions known to Fabric
+        run: |
+          curl -sS https://meta.fabricmc.net/v2/versions/game \
+            | jq -r '.[0:15][] | "\(.version)  stable=\(.stable)"' || true
+
+      - name: Fabric loader
+        run: |
+          curl -sS https://meta.fabricmc.net/v2/versions/loader \
+            | jq -r '.[0:5][] | "\(.version)  stable=\(.stable)"' || true
+
+      - name: Fabric API builds for Minecraft ${{ env.MINECRAFT_VERSION }}
+        run: |
+          curl -sS "https://api.modrinth.com/v2/project/fabric-api/version?game_versions=%5B%22${MINECRAFT_VERSION}%22%5D" \
+            | jq -r '.[0:10][] | .version_number' || true
+
+      - name: fabric-loom
+        run: |
+          curl -sS https://maven.fabricmc.net/net/fabricmc/fabric-loom/maven-metadata.xml \
+            | grep -o '<version>[^<]*' | tail -15 || true
+
+      - name: NeoForge builds
+        run: |
+          curl -sS https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml \
+            | grep -o '<version>[^<]*' | tail -20 || true
+
+      - name: ModDevGradle
+        run: |
+          curl -sS https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/maven-metadata.xml \
+            | grep -o '<version>[^<]*' | tail -15 || true
+
+  fabric:
+    name: Build Fabric
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Build
+        working-directory: potato-pvp/fabric
+        run: gradle build --stacktrace --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: potato-pvp-fabric
+          path: potato-pvp/fabric/build/libs/*.jar
+
+  neoforge:
+    name: Build NeoForge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Build
+        working-directory: potato-pvp/neoforge
+        run: gradle build --stacktrace --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: potato-pvp-neoforge
+          path: potato-pvp/neoforge/build/libs/*.jar

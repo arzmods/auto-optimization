@@ -1,0 +1,31 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/arzmods/auto-optimization/issues"
+
+[[mods]]
+modId = "potatopvp"
+version = "${version}"
+displayName = "Potato PvP"
+authors = "arzmods"
+description = '''
+Potato graphics for low end PCs. No particles, no block textures and minimum
+animations out of the box. Press Z to change any of the three.
+'''
+
+[[mixins]]
+config = "potatopvp.mixins.json"
+
+[[dependencies.potatopvp]]
+modId = "neoforge"
+type = "required"
+versionRange = "[0,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.potatopvp]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.3,)"
+ordering = "NONE"
+side = "CLIENT"

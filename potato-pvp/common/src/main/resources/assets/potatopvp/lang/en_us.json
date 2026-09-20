@@ -1,0 +1,17 @@
+{
+  "key.categories.potatopvp": "Potato PvP",
+  "key.potatopvp.open_menu": "Open Potato PvP settings",
+
+  "potatopvp.screen.title": "Potato PvP",
+  "potatopvp.screen.subtitle": "Lower is faster. Changes apply when you press Done.",
+
+  "potatopvp.option.particles": "Particles",
+  "potatopvp.option.textures": "Textures",
+  "potatopvp.option.animations": "Animations",
+
+  "potatopvp.level.none": "None",
+  "potatopvp.level.minimum": "Minimum",
+  "potatopvp.level.medium": "Medium",
+
+  "potatopvp.button.preset": "Reset to Potato preset"
+}

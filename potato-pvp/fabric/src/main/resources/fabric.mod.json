@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "potatopvp",
+  "version": "${version}",
+  "name": "Potato PvP",
+  "description": "Potato graphics for low end PCs. No particles, no block textures and minimum animations out of the box. Press Z to change any of the three.",
+  "authors": [
+    "arzmods"
+  ],
+  "contact": {
+    "sources": "https://github.com/arzmods/auto-optimization/tree/main/potato-pvp",
+    "issues": "https://github.com/arzmods/auto-optimization/issues"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.arzmods.potatopvp.fabric.PotatoPvPFabric"
+    ]
+  },
+  "mixins": [
+    "potatopvp.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": "~26.3",
+    "java": ">=25"
+  }
+}
