@@ -137,7 +137,16 @@ jobs:
 
       - name: Build
         working-directory: potato-pvp/fabric
-        run: gradle build --no-daemon
+        run: |
+          # 26.x has no mappings to speak of, so try the two configurations
+          # that can express "do not rename anything" and report which worked.
+          if gradle build --no-daemon; then
+            echo "BUILT with intermediary mappings"
+          else
+            echo "=== intermediary failed, retrying with empty layered mappings ==="
+            gradle build --no-daemon -PmappingsMode=layered
+            echo "BUILT with empty layered mappings"
+          fi
 
       - uses: actions/upload-artifact@v4
         if: success()

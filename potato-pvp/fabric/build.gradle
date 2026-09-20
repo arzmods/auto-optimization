@@ -25,7 +25,18 @@ sourceSets {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
+
+    // Minecraft 26.x ships deobfuscated. Its version manifest offers only
+    // "client" and "server" downloads - there is no client_mappings file any
+    // more - and Fabric publishes no yarn for 26.3. The only mappings that
+    // exist are intermediary 0.0.0, the placeholder used when the game needs
+    // no renaming, so loom.officialMojangMappings() cannot work here.
+    if (project.findProperty('mappingsMode') == 'layered') {
+        mappings loom.layered {}
+    } else {
+        mappings "net.fabricmc:intermediary:${project.intermediary_version}:v2"
+    }
+
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
