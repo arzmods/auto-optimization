@@ -6,8 +6,8 @@ import com.arzmods.potatopvp.client.PotatoOptions;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
 
 /**
  * Fabric entrypoint. Everything interesting lives in the shared module - this
@@ -20,9 +20,15 @@ public class PotatoPvPFabric implements ClientModInitializer {
     public void onInitializeClient() {
         PotatoPvP.onInitialize(FabricLoader.getInstance().getConfigDir());
 
-        KeyBindingHelper.registerKeyBinding(PotatoKeys.OPEN_MENU);
+        // Registered by hand rather than through Fabric API, which moved this
+        // helper. Done twice because options may not exist yet at init time,
+        // and again once the client is up; the call is idempotent.
+        PotatoKeys.registerInto(Minecraft.getInstance());
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> PotatoOptions.applyAll());
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            PotatoKeys.registerInto(client);
+            PotatoOptions.applyAll();
+        });
         ClientTickEvents.END_CLIENT_TICK.register(PotatoKeys::handleClientTick);
     }
 }
