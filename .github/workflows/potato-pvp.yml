@@ -58,6 +58,22 @@ jobs:
   # Minecraft renames classes and methods between versions. This reads the real
   # names out of the jar on the compile classpath, so the mod can be corrected
   # against fact rather than guesswork.
+      - name: Does Mojang still ship deobfuscation mappings for this version
+        run: |
+          URL=$(curl -sS https://launchermeta.mojang.com/mc/game/version_manifest_v2.json \
+            | jq -r --arg v "$MINECRAFT_VERSION" '.versions[] | select(.id==$v) | .url')
+          echo "version json: $URL"
+          curl -sS "$URL" | jq '.downloads | keys' || true
+
+      - name: Yarn and intermediary for this version
+        run: |
+          echo "-- yarn --"
+          curl -sS "https://meta.fabricmc.net/v2/versions/yarn/${MINECRAFT_VERSION}" \
+            | jq -r '.[0:5][] | .version' || true
+          echo "-- intermediary --"
+          curl -sS "https://meta.fabricmc.net/v2/versions/intermediary/${MINECRAFT_VERSION}" \
+            | jq -r '.[] | .maven' || true
+
   discover-api:
     name: Minecraft API names
     runs-on: ubuntu-latest
