@@ -1,8 +1,10 @@
 package com.arzmods.potatopvp.client;
 
+import com.arzmods.potatopvp.PotatoPvP;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 
 /**
  * The Z key. Created here so both loaders share one definition; each loader
@@ -10,12 +12,17 @@ import net.minecraft.client.Minecraft;
  */
 public final class PotatoKeys {
 
-    public static final String CATEGORY = "key.categories.potatopvp";
+    /**
+     * Key categories are no longer a plain translation key - 26.3 wants a
+     * registered Category built from an Identifier.
+     */
+    public static final KeyMapping.Category CATEGORY =
+            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(PotatoPvP.MOD_ID, "main"));
 
     /**
-     * Taken from Minecraft's own input constants rather than org.lwjgl.glfw:
-     * 26.x ships lwjgl-sdl and no lwjgl-glfw, so that package is not on the
-     * classpath at all.
+     * Key code comes from Minecraft's own input constants rather than
+     * org.lwjgl.glfw: 26.x ships lwjgl-sdl and no lwjgl-glfw, so that package
+     * is not on the classpath at all.
      */
     public static final KeyMapping OPEN_MENU = new KeyMapping(
             "key.potatopvp.open_menu",

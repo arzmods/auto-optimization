@@ -2,7 +2,7 @@ package com.arzmods.potatopvp.client;
 
 import com.arzmods.potatopvp.PotatoConfig;
 import com.arzmods.potatopvp.QualityLevel;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,6 +17,11 @@ import java.util.function.Consumer;
  * <p>Three buttons, one per setting, each cycling None / Minimum / Medium.
  * Nothing is applied until the screen is closed, so you can flick through the
  * options without triggering a resource reload on every click.
+ *
+ * <p>There is no drawn title. Minecraft 26.3 replaced the old
+ * render(GuiGraphics, ...) method with a render-state extraction model, and a
+ * decorative heading is not worth reaching into that for - every button is
+ * labelled with the setting it controls, so the screen reads fine without one.
  */
 public class PotatoOptionsScreen extends Screen {
 
@@ -57,7 +62,8 @@ public class PotatoOptionsScreen extends Screen {
                         Component.translatable("potatopvp.button.preset"),
                         button -> {
                             PotatoConfig.resetToPotatoPreset();
-                            this.rebuildWidgets();
+                            // Reopen so every button picks up its new value.
+                            Minecraft.getInstance().setScreenAndShow(new PotatoOptionsScreen(this.parent));
                         })
                 .bounds(left, y, ROW_WIDTH, ROW_HEIGHT)
                 .build());
@@ -68,23 +74,20 @@ public class PotatoOptionsScreen extends Screen {
                 .build());
     }
 
-    /** One row: a label plus a value that cycles through the three levels. */
+    /**
+     * One row: a label plus a value that cycles through the three levels.
+     *
+     * <p>The starting value is the second argument to builder() now; the old
+     * withInitialValue() step is gone.
+     */
     private CycleButton<QualityLevel> levelButton(String translationKey, int x, int y,
                                                   QualityLevel initial, Consumer<QualityLevel> setter) {
-        return CycleButton.<QualityLevel>builder(level -> Component.translatable(level.getTranslationKey()))
+        return CycleButton.<QualityLevel>builder(
+                        level -> Component.translatable(level.getTranslationKey()), initial)
                 .withValues(QualityLevel.values())
-                .withInitialValue(initial)
                 .create(x, y, ROW_WIDTH, ROW_HEIGHT,
                         Component.translatable(translationKey),
                         (button, value) -> setter.accept(value));
-    }
-
-    @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 18, 0xFFFFFF);
-        guiGraphics.drawCenteredString(this.font,
-                Component.translatable("potatopvp.screen.subtitle"), this.width / 2, 32, 0xA0A0A0);
     }
 
     @Override
@@ -92,13 +95,14 @@ public class PotatoOptionsScreen extends Screen {
         PotatoConfig.save();
         PotatoOptions.applyAll();
 
-        if (this.minecraft != null) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft != null) {
             // Flattening happens while textures are decoded, so a changed
             // Textures setting only shows up after the resources are re-read.
             if (PotatoConfig.textures() != this.texturesOnOpen) {
-                this.minecraft.reloadResourcePacks();
+                minecraft.reloadResourcePacks();
             }
-            this.minecraft.setScreenAndShow(this.parent);
+            minecraft.setScreenAndShow(this.parent);
         }
     }
 

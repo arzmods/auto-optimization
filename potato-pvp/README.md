@@ -70,15 +70,17 @@ you launch. You can edit that file by hand if you prefer.
 
 #### Totem pops
 
-A vanilla totem pop is two things at once: about thirty particles, and a giant
-spinning totem that covers your screen for two seconds. Both are dropped to the
-bare minimum on **None** and **Minimum**:
+A vanilla totem pop throws out about thirty particles at once. On **None** and
+**Minimum** only the first **two** of the burst get through and the rest are
+binned, so you get a small flicker instead of a faceful.
 
-- the full screen animation does not play at all
-- only the first **two** particles of the burst get through, the rest are binned
+You keep the sound, so you always know a pop happened and can keep swinging.
+On **Medium** the pop is vanilla.
 
-You keep the sound, and on Minimum you keep that small flicker, so you always
-know a pop happened and can keep swinging. On **Medium** the pop is vanilla.
+The other half of a pop is the full screen spinning totem. Suppressing that is
+not currently possible: the hook it used to live on,
+`GameRenderer.displayItemActivation`, no longer exists in 26.3 and the
+replacement has not been located yet.
 
 ### Textures
 
@@ -126,8 +128,7 @@ Everything shared lives in `potato-pvp/common/src/main/java/com/arzmods/potatopv
 | `client/PotatoAnimations.java` | Decides if a texture may animate. |
 | `client/PotatoOptions.java` | Pushes the levels into Minecraft's video options. |
 | `mixin/ParticleEngineMixin.java` | Hooks the particle engine. |
-| `mixin/SpriteContentsMixin.java` | Hooks texture loading and animation tickers. |
-| `mixin/GameRendererMixin.java` | Drops the full screen totem pop animation. |
+| `mixin/SpriteContentsMixin.java` | Hooks texture loading and animation. |
 
 Each loader folder only holds its entrypoint and its metadata file.
 

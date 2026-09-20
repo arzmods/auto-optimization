@@ -73,29 +73,36 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
-      - name: Everything still unknown, in one greppable block
+      - name: Remaining unknowns
         working-directory: potato-pvp/neoforge
         run: |
-          # Warm up first so Minecraft exists, then ask every remaining question.
           gradle -q apiJars --no-daemon > /dev/null 2>&1 || true
 
+          echo "--- GraphicsPreset constants ---"
+          gradle -q apiMethods --no-daemon -PshowFields \
+            -PtypeNames=net.minecraft.client.GraphicsPreset 2>/dev/null | grep '^API|' || true
+
+          echo "--- how to build an Identifier ---"
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=net.minecraft.resources.Identifier 2>/dev/null | grep '^API|' \
+            | grep -iE '====|MISSING|CTOR|of\(|parse|fromNamespace|withDefault' || true
+
+          echo "--- NativeImage pixel accessors ---"
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=com.mojang.blaze3d.platform.NativeImage 2>/dev/null | grep '^API|' \
+            | grep -iE '====|MISSING|pixel|getWidth|getHeight|format' || true
+
+          echo "--- Screen: widget plumbing ---"
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=net.minecraft.client.gui.screens.Screen 2>/dev/null | grep '^API|' \
+            | grep -iE '====|MISSING|addRenderable|rebuildWidgets|isPauseScreen|getFont' || true
+
+          echo "--- where did the totem overlay go ---"
           gradle -q apiClasses --no-daemon \
-            -PclassContains=graphicspreset,guigraphic,rendercontext,drawcontext 2>/dev/null | grep '^API|' || true
-
+            -PclassContains=itemactivation,activation 2>/dev/null | grep '^API|' || true
           gradle -q apiMethods --no-daemon \
-            '-PtypeNames=net.minecraft.client.gui.screens.Screen,net.minecraft.client.gui.components.CycleButton,net.minecraft.client.gui.components.CycleButton$Builder' \
-            2>/dev/null | grep '^API|' | grep -iE '====|MISSING|CTOR|render|create|builder|withValues|withInitial|onClose' || true
-
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.renderer.texture.SpriteContents 2>/dev/null | grep '^API|' || true
-
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.particle.ParticleEngine,net.minecraft.client.renderer.GameRenderer \
-            2>/dev/null | grep '^API|' | grep -iE '====|MISSING|CTOR|particle|add|item|activation' || true
-
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.KeyMapping 2>/dev/null | grep '^API|' \
-            | grep -iE '====|MISSING|CTOR|category|consumeClick' || true
+            -PtypeNames=net.minecraft.client.gui.Gui 2>/dev/null | grep '^API|' \
+            | grep -iE '====|MISSING|item|activation|totem' || true
 
   fabric:
     name: Build Fabric
