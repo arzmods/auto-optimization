@@ -107,7 +107,8 @@ jobs:
         working-directory: potato-pvp/neoforge
         run: |
           gradle -q apiMethods --no-daemon \
-            '-PtypeNames=net.minecraft.client.KeyMapping,net.minecraft.client.KeyMapping$Category,com.mojang.blaze3d.platform.InputConstants,net.neoforged.fml.common.EventBusSubscriber' || true
+            '-PtypeNames=net.minecraft.client.KeyMapping,net.minecraft.client.KeyMapping$Category' \
+            | grep -iE '====|MISSING|CTOR|category|consumeClick' || true
 
   fabric:
     name: Build Fabric

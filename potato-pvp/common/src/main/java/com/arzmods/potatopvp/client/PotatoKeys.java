@@ -1,5 +1,6 @@
 package com.arzmods.potatopvp.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
@@ -12,18 +13,13 @@ public final class PotatoKeys {
     public static final String CATEGORY = "key.categories.potatopvp";
 
     /**
-     * Key code for Z.
-     *
-     * <p>Not taken from org.lwjgl.glfw any more: Minecraft 26.x ships
-     * lwjgl-sdl instead of lwjgl-glfw, so that package is not on the
-     * classpath at all. The numeric value is the one Minecraft's own input
-     * layer uses for Z.
+     * Taken from Minecraft's own input constants rather than org.lwjgl.glfw:
+     * 26.x ships lwjgl-sdl and no lwjgl-glfw, so that package is not on the
+     * classpath at all.
      */
-    public static final int KEY_Z = 90;
-
     public static final KeyMapping OPEN_MENU = new KeyMapping(
             "key.potatopvp.open_menu",
-            KEY_Z,
+            InputConstants.KEY_Z,
             CATEGORY);
 
     private PotatoKeys() {

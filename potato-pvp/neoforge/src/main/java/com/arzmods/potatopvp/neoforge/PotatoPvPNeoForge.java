@@ -24,26 +24,22 @@ public class PotatoPvPNeoForge {
         PotatoPvP.onInitialize(FMLPaths.CONFIGDIR.get());
     }
 
-    /** Mod bus: registration that happens while the game is starting up. */
-    @EventBusSubscriber(modid = PotatoPvP.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static final class ModBusEvents {
+    /**
+     * One subscriber for both events. NeoForge's @EventBusSubscriber no longer
+     * takes a bus argument - the mod bus and game bus distinction is gone, so
+     * key registration and the per-tick check live together.
+     */
+    @EventBusSubscriber(modid = PotatoPvP.MOD_ID, value = Dist.CLIENT)
+    public static final class Events {
 
-        private ModBusEvents() {
+        private static boolean appliedOnce;
+
+        private Events() {
         }
 
         @SubscribeEvent
         public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
             event.register(PotatoKeys.OPEN_MENU);
-        }
-    }
-
-    /** Game bus: the per-tick key check. */
-    @EventBusSubscriber(modid = PotatoPvP.MOD_ID, value = Dist.CLIENT)
-    public static final class GameBusEvents {
-
-        private static boolean appliedOnce;
-
-        private GameBusEvents() {
         }
 
         @SubscribeEvent

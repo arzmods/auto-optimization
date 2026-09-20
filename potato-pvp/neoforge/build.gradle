@@ -122,8 +122,10 @@ tasks.register('apiMethods') {
                 type.constructors.each { c ->
                     println "  CTOR (${c.parameterTypes.collect { it.simpleName }.join(', ')})"
                 }
-                type.fields.toList().sort { it.name }.each { f ->
-                    println "  FIELD ${f.type.simpleName} ${f.name}"
+                if (project.hasProperty('showFields')) {
+                    type.fields.toList().sort { it.name }.each { f ->
+                        println "  FIELD ${f.type.simpleName} ${f.name}"
+                    }
                 }
                 type.methods.toList().sort { it.name }.each { m ->
                     def args = m.parameterTypes.collect { it.simpleName }.join(', ')
