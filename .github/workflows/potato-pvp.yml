@@ -150,7 +150,12 @@ jobs:
         if: success()
         with:
           name: potato-pvp-fabric
-          path: potato-pvp/fabric/build/libs/*.jar
+          # Exactly one jar, so there is nothing to choose between.
+          path: |
+            potato-pvp/fabric/build/libs/*.jar
+            !potato-pvp/fabric/build/libs/*-sources.jar
+            !potato-pvp/fabric/build/libs/*-dev.jar
+            !potato-pvp/fabric/build/libs/*-dev-shadow.jar
 
   neoforge:
     name: Build NeoForge
@@ -175,4 +180,7 @@ jobs:
         if: success()
         with:
           name: potato-pvp-neoforge
-          path: potato-pvp/neoforge/build/libs/*.jar
+          # Exactly one jar, so there is nothing to choose between.
+          path: |
+            potato-pvp/neoforge/build/libs/*.jar
+            !potato-pvp/neoforge/build/libs/*-sources.jar
