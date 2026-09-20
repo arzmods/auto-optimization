@@ -76,8 +76,8 @@ tasks.register('apiJars') {
     dependsOn apiClasspath
     doLast {
         def jars = apiClasspath.files.findAll { it.name.endsWith('.jar') }
-        println "JAR COUNT ${jars.size()}"
-        jars.each { println "JAR ${it.name}" }
+        println "API| JAR COUNT ${jars.size()}"
+        jars.each { println "API| JAR ${it.name}" }
     }
 }
 
@@ -103,8 +103,8 @@ tasks.register('apiClasses') {
             } catch (Exception ignored) {
             }
         }
-        found.each { println "CLASS ${it}" }
-        println "MATCHES ${found.size()}"
+        found.each { println "API| CLASS ${it}" }
+        println "API| MATCHES ${found.size()}"
     }
 }
 
@@ -116,23 +116,23 @@ tasks.register('apiMethods') {
         def urls = apiClasspath.files.collect { it.toURI().toURL() } as URL[]
         def loader = new URLClassLoader(urls, ClassLoader.getPlatformClassLoader())
         wanted.each { name ->
-            println "==== ${name}"
+            println "API| ==== ${name}"
             try {
                 def type = Class.forName(name, false, loader)
-                type.constructors.each { c ->
-                    println "  CTOR (${c.parameterTypes.collect { it.simpleName }.join(', ')})"
+                type.getConstructors().each { c ->
+                    println "API|   CTOR (${c.parameterTypes.collect { it.simpleName }.join(', ')})"
                 }
                 if (project.hasProperty('showFields')) {
-                    type.fields.toList().sort { it.name }.each { f ->
-                        println "  FIELD ${f.type.simpleName} ${f.name}"
+                    type.getFields().toList().sort { it.name }.each { f ->
+                        println "API|   FIELD ${f.type.simpleName} ${f.name}"
                     }
                 }
-                type.methods.toList().sort { it.name }.each { m ->
+                type.getMethods().toList().sort { it.name }.each { m ->
                     def args = m.parameterTypes.collect { it.simpleName }.join(', ')
-                    println "  ${m.returnType.simpleName} ${m.name}(${args})"
+                    println "API|   ${m.returnType.simpleName} ${m.name}(${args})"
                 }
             } catch (Throwable t) {
-                println "  MISSING ${t.class.simpleName} ${t.message}"
+                println "API|   MISSING ${t.class.simpleName} ${t.message}"
             }
         }
     }
