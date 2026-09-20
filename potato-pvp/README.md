@@ -169,7 +169,7 @@ Every version number lives in one file per loader, nothing is hardcoded in the
 Java:
 
 - `potato-pvp/fabric/gradle.properties` -> `minecraft_version`, `loader_version`,
-  `fabric_version`, `loom_version`
+  `fabric_version`, `loom_version`, `intermediary_version`
 - `potato-pvp/neoforge/gradle.properties` -> `minecraft_version`, `neoforge_version`,
   `moddev_version`
 
@@ -185,11 +185,41 @@ Also update `"minecraft": "~26.3"` in
 
 ---
 
-## 6. If something does not work
+## 6. Known limitations
+
+**Not tested in a running game.** Both versions compile and CI produces jars,
+but nothing here has been launched in Minecraft. Mixins attach at runtime, not
+at compile time, so the honest state is "builds cleanly, unproven in play". If
+a setting appears to do nothing, that is the failure mode to suspect first -
+the mixins are set to fail quietly rather than crash your game.
+
+**The full screen totem animation still plays.** Particles from a pop are
+capped to two, but the giant spinning totem cannot be suppressed: the hook it
+used to live on, `GameRenderer.displayItemActivation`, does not exist in 26.3
+and no replacement has been found.
+
+**The settings screen has no title text.** 26.3 replaced
+`render(GuiGraphics, ...)` with a render-state extraction model, and a
+decorative heading was not worth reaching into that for. Every button is
+labelled with the setting it controls.
+
+**Mappings.** Minecraft 26.x ships deobfuscated - its version manifest has no
+`client_mappings` download and Fabric publishes no yarn for 26.3 - so the
+Fabric build uses intermediary and produces no sources jar. This is why the
+class names in the source are real names rather than obfuscated ones.
+
+**Two settings need a reload to take full effect.** Textures triggers a
+resource reload when you press Done. Mipmap level changes made on first launch
+may need a restart.
+
+---
+
+## 7. If something does not work
 
 **Z does nothing.** Another mod may have taken the key. Open
 `Options -> Controls -> Key Binds`, find the **Potato PvP** category, and pick a
-free key.
+free key. If the category is not listed at all, check `latest.log` for a
+`[Potato PvP] Could not find the key mapping list` warning.
 
 **The menu opens but nothing changes.** Check your log
 (`.minecraft/logs/latest.log`) for lines starting with `[Potato PvP]`. If you
