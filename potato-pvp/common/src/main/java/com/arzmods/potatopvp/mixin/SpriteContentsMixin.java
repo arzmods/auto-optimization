@@ -30,7 +30,7 @@ public class SpriteContentsMixin {
     @Inject(method = "<init>", at = @At("RETURN"), require = 0)
     private void potatopvp$reduceDetail(CallbackInfo ci) {
         SpriteContents self = (SpriteContents) (Object) this;
-        NativeImage image = self.getOriginalImage();
+        NativeImage image = PotatoTextures.findImage(self);
         if (image != null) {
             PotatoTextures.degrade(self.name(), self.width(), self.height(), image, PotatoConfig.textures());
         }

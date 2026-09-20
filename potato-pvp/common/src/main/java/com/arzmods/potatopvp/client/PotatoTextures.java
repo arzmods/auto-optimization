@@ -200,4 +200,50 @@ public final class PotatoTextures {
         }
     }
 
+
+    /**
+     * Digs the decoded image out of a SpriteContents.
+     *
+     * <p>NeoForge patches in a public getOriginalImage(), but vanilla - and so
+     * Fabric - has only a private field, and its name has changed between
+     * versions. Locating it by type instead works on both loaders: it is the
+     * only plain NativeImage field on the class, the mipmap pyramid beside it
+     * being an array. Looked up once and cached.
+     */
+    public static NativeImage findImage(Object spriteContents) {
+        if (spriteContents == null) {
+            return null;
+        }
+        try {
+            ensureImageField(spriteContents.getClass());
+            return imageField == null ? null : (NativeImage) imageField.get(spriteContents);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static java.lang.reflect.Field imageField;
+    private static boolean imageFieldSearched;
+
+    private static synchronized void ensureImageField(Class<?> type) {
+        if (imageFieldSearched) {
+            return;
+        }
+        imageFieldSearched = true;
+        for (Class<?> current = type; current != null && current != Object.class; current = current.getSuperclass()) {
+            for (java.lang.reflect.Field field : current.getDeclaredFields()) {
+                if (field.getType() == NativeImage.class && !Modifier.isStatic(field.getModifiers())) {
+                    try {
+                        field.setAccessible(true);
+                        imageField = field;
+                        return;
+                    } catch (Throwable ignored) {
+                        // keep looking
+                    }
+                }
+            }
+        }
+        PotatoPvP.LOGGER.warn("[Potato PvP] Could not reach the sprite image field; "
+                + "the Textures setting will have no effect on this Minecraft version.");
+    }
 }

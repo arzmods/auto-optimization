@@ -65,3 +65,38 @@ jar {
         rename { "${it}_${project.archives_base_name}" }
     }
 }
+
+// --------------------------------------------------------------------------
+// API discovery helper, same idea as the one in the NeoForge build: read the
+// real class names out of the jars on the compile classpath rather than
+// guessing. Unlike that one this does not filter by package, because the
+// interesting question here is usually what Fabric API calls something.
+//
+// gradle apiClasses -PclassContains=keybinding
+// --------------------------------------------------------------------------
+def apiClasspath = sourceSets.main.compileClasspath
+
+tasks.register('apiClasses') {
+    dependsOn apiClasspath
+    def needles = (project.findProperty('classContains') ?: 'keybinding').toString().toLowerCase().split(',')
+    doLast {
+        def found = new TreeSet<String>()
+        apiClasspath.files.findAll { it.name.endsWith('.jar') }.each { jar ->
+            try {
+                new java.util.zip.ZipFile(jar).withCloseable { zip ->
+                    zip.entries().each { entry ->
+                        if (!entry.name.endsWith('.class')) return
+                        def binary = entry.name[0..-7].replace('/', '.')
+                        def simple = binary.substring(binary.lastIndexOf('.') + 1).toLowerCase()
+                        if (needles.any { simple.contains(it) }) {
+                            found << binary
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        found.each { println "API| CLASS ${it}" }
+        println "API| MATCHES ${found.size()}"
+    }
+}
