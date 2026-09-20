@@ -56,3 +56,58 @@ tasks.withType(JavaCompile).configureEach {
     it.options.encoding = 'UTF-8'
     it.options.release = 25
 }
+
+// --------------------------------------------------------------------------
+// API discovery helpers.
+//
+// Minecraft renames classes and methods between versions, and this project is
+// developed in an environment that cannot download Minecraft. These two tasks
+// read the real names straight out of the jar on the compile classpath so the
+// code can be corrected from fact instead of guesswork. Run from CI, see
+// .github/workflows/potato-pvp.yml.
+// --------------------------------------------------------------------------
+
+// gradle apiClasses -PclassNames=ResourceLocation,GuiGraphics
+tasks.register('apiClasses') {
+    def classpath = sourceSets.main.compileClasspath
+    def wanted = (project.findProperty('classNames') ?: 'ResourceLocation').toString().split(',')
+    doLast {
+        classpath.files.findAll { it.name.endsWith('.jar') }.each { jar ->
+            try {
+                new java.util.zip.ZipFile(jar).withCloseable { zip ->
+                    zip.entries().each { entry ->
+                        if (!entry.name.endsWith('.class')) return
+                        def binary = entry.name[0..-7].replace('/', '.')
+                        def simple = binary.substring(binary.lastIndexOf('.') + 1)
+                        if (wanted.any { simple == it || simple.endsWith('$' + it) }) {
+                            println "CLASS ${binary}"
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+}
+
+// gradle apiMethods -PtypeNames=net.minecraft.client.Minecraft
+tasks.register('apiMethods') {
+    def classpath = sourceSets.main.compileClasspath
+    def wanted = (project.findProperty('typeNames') ?: 'net.minecraft.client.Options').toString().split(',')
+    doLast {
+        def urls = classpath.files.collect { it.toURI().toURL() } as URL[]
+        def loader = new URLClassLoader(urls, ClassLoader.getPlatformClassLoader())
+        wanted.each { name ->
+            println "==== ${name}"
+            try {
+                def type = Class.forName(name, false, loader)
+                type.methods.toList().sort { it.name }.each { m ->
+                    def args = m.parameterTypes.collect { it.simpleName }.join(', ')
+                    println "  ${m.returnType.simpleName} ${m.name}(${args})"
+                }
+            } catch (Throwable t) {
+                println "  NOT FOUND: ${t.class.simpleName} ${t.message}"
+            }
+        }
+    }
+}
