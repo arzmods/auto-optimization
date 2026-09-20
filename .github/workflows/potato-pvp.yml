@@ -73,37 +73,37 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
-      - name: Classes that were renamed
+      - name: Sanity check - is Minecraft actually on the classpath
+        working-directory: potato-pvp/neoforge
+        run: gradle -q apiJars --no-daemon || true
+
+      - name: Core classes
         working-directory: potato-pvp/neoforge
         run: |
           gradle -q apiClasses --no-daemon \
-            -PclassNames=ResourceLocation,Identifier,GuiGraphics,DrawContext,SpriteTicker,TextureTicker,ParticleStatus,GraphicsStatus,NativeImage,ParticleOptions,KeyMapping \
-            | sort -u || true
+            -PclassContains=resourcelocation,identifier,guigraphics,drawcontext || true
+
+      - name: Texture and particle classes
+        working-directory: potato-pvp/neoforge
+        run: |
+          gradle -q apiClasses --no-daemon \
+            -PclassContains=spritecontents,spriteticker,nativeimage,particlestatus,graphicsstatus || true
+
+      - name: Widget and input classes
+        working-directory: potato-pvp/neoforge
+        run: |
+          gradle -q apiClasses --no-daemon \
+            -PclassContains=cyclebutton,keymapping,particleengine,gamerenderer || true
 
       - name: Minecraft - screen handling
         working-directory: potato-pvp/neoforge
         run: |
           gradle -q apiMethods --no-daemon -PtypeNames=net.minecraft.client.Minecraft \
-            | grep -iE '====|screen|overlay|reload' || true
+            | grep -iE '====|MISSING|screen|overlay|reload' || true
 
       - name: Options - every setting
         working-directory: potato-pvp/neoforge
-        run: |
-          gradle -q apiMethods --no-daemon -PtypeNames=net.minecraft.client.Options --no-daemon || true
-
-      - name: Widgets and screens
-        working-directory: potato-pvp/neoforge
-        run: |
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.gui.components.CycleButton,net.minecraft.client.gui.screens.Screen \
-            | grep -iE '====|builder|create|render|NOT FOUND' || true
-
-      - name: Textures and particles
-        working-directory: potato-pvp/neoforge
-        run: |
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.renderer.texture.SpriteContents,net.minecraft.client.particle.ParticleEngine,net.minecraft.client.renderer.GameRenderer \
-            | grep -iE '====|ticker|name|width|height|particle|add|item|activation|NOT FOUND' || true
+        run: gradle -q apiMethods --no-daemon -PtypeNames=net.minecraft.client.Options || true
 
   fabric:
     name: Build Fabric
