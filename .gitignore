@@ -1,0 +1,24 @@
+# Gradle / build output
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Minecraft runtime
+run/
+
+# Audio is NOT committed by default.
+#
+# This keeps copyrighted music out of the repo by accident, which matters a lot if this
+# ever goes public. If you have music you are actually licensed to ship, add it on
+# purpose with:
+#     git add -f src/main/resources/assets/jukeboxhits/sounds/song/song_1.ogg
+*.ogg

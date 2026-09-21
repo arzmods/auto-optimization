@@ -1,0 +1,27 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "jukeboxhits"
+version = "1.0.0"
+displayName = "Jukebox Hits"
+authors = "arzmods"
+description = '''
+Play your own songs on a jukebox. /song <code> hands you a disc.
+'''
+
+[[dependencies.jukeboxhits]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21,)"
+ordering = "NONE"
+side = "BOTH"
+
+# jukebox_song, the registry this mod adds songs to, arrived in Minecraft 1.21.
+[[dependencies.jukeboxhits]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,)"
+ordering = "NONE"
+side = "BOTH"
