@@ -138,7 +138,8 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri libglx-mesa0 \
-            libsdl2-2.0-0 libopenal1 > /dev/null
+            libegl-mesa0 libegl1 libgl1 libglu1-mesa mesa-vulkan-drivers \
+            libsdl2-2.0-0 libopenal1 x11-xserver-utils > /dev/null
           echo "installed"
 
       # NeoForge rather than Fabric. Loom's dev runtime remaps into a "named"
@@ -152,13 +153,15 @@ jobs:
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
           GALLIUM_DRIVER: llvmpipe
-          MESA_GL_VERSION_OVERRIDE: '4.5'
+          MESA_GL_VERSION_OVERRIDE: '4.6'
+          MESA_GLSL_VERSION_OVERRIDE: '460'
           SDL_VIDEODRIVER: x11
+          SDL_RENDER_DRIVER: opengl
         run: |
           # Loom's runClient never exits on its own, so give it a window and
           # then take it away. A timeout kill is the expected outcome here.
           timeout --signal=KILL 600 \
-            xvfb-run -a --server-args="-screen 0 1280x720x24" \
+            xvfb-run -a --server-args="-screen 0 1280x720x24 +extension GLX +extension RANDR +render -noreset" \
             gradle runClient --no-daemon || true
           echo "client stopped"
 
@@ -172,6 +175,10 @@ jobs:
             exit 0
           fi
 
+          echo "===== did a rendering backend come up ====="
+          grep -iE "backend|llvmpipe|Using graphics device|OpenGL" "$LOG" | head -12 || echo "(nothing)"
+
+          echo
           echo "===== every line the mod logged ====="
           grep -i "potato" "$LOG" || echo "(the mod logged nothing at all)"
 
