@@ -89,36 +89,50 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
-      - name: Remaining unknowns
+      - name: Everything needed for the next build
         working-directory: potato-pvp/neoforge
         run: |
           gradle -q apiJars --no-daemon > /dev/null 2>&1 || true
 
-          echo "--- GraphicsPreset constants ---"
-          gradle -q apiMethods --no-daemon -PshowFields \
-            -PtypeNames=net.minecraft.client.GraphicsPreset 2>/dev/null | grep '^API|' || true
-
-          echo "--- how to build an Identifier ---"
+          echo "=== NativeImage, every method (the pixel accessors matter most) ==="
           gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.resources.Identifier 2>/dev/null | grep '^API|' \
-            | grep -iE '====|MISSING|CTOR|of\(|parse|fromNamespace|withDefault' || true
+            -PtypeNames=com.mojang.blaze3d.platform.NativeImage 2>/dev/null | grep '^API|' || true
 
-          echo "--- NativeImage pixel accessors ---"
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=com.mojang.blaze3d.platform.NativeImage 2>/dev/null | grep '^API|' \
-            | grep -iE '====|MISSING|pixel|getWidth|getHeight|format' || true
-
-          echo "--- Screen: widget plumbing ---"
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.gui.screens.Screen 2>/dev/null | grep '^API|' \
-            | grep -iE '====|MISSING|addRenderable|rebuildWidgets|isPauseScreen|getFont' || true
-
-          echo "--- where did the totem overlay go ---"
+          echo "=== end crystal classes ==="
           gradle -q apiClasses --no-daemon \
-            -PclassContains=itemactivation,activation 2>/dev/null | grep '^API|' || true
+            -PclassContains=endcrystal 2>/dev/null | grep '^API|' || true
+
+          echo "=== mace / gust / wind classes ==="
+          gradle -q apiClasses --no-daemon \
+            -PclassContains=gust,windcharge,shockwave,mace 2>/dev/null | grep '^API|' || true
+
+          echo "=== entity animation classes ==="
+          gradle -q apiClasses --no-daemon \
+            -PclassContains=entityrenderstate,entitymodel,walkanimation 2>/dev/null | grep '^API|' || true
+
+          echo "=== non-atlas texture classes ==="
+          gradle -q apiClasses --no-daemon \
+            -PclassContains=simpletexture,abstracttexture,dynamictexture 2>/dev/null | grep '^API|' || true
+
+          echo "=== likely crystal renderer / render state ==="
           gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.gui.Gui 2>/dev/null | grep '^API|' \
-            | grep -iE '====|MISSING|item|activation|totem' || true
+            -PtypeNames=net.minecraft.client.renderer.entity.EndCrystalRenderer,net.minecraft.client.renderer.entity.state.EndCrystalRenderState \
+            2>/dev/null | grep '^API|' || true
+
+          echo "=== EntityRenderState fields ==="
+          gradle -q apiMethods --no-daemon -PshowFields \
+            -PtypeNames=net.minecraft.client.renderer.entity.state.EntityRenderState 2>/dev/null \
+            | grep '^API|' || true
+
+          echo "=== EntityModel ==="
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=net.minecraft.client.model.EntityModel 2>/dev/null | grep '^API|' \
+            | grep -iE '====|MISSING|setup|anim|root|pose' || true
+
+          echo "=== SimpleTexture / AbstractTexture ==="
+          gradle -q apiMethods --no-daemon \
+            -PtypeNames=net.minecraft.client.renderer.texture.SimpleTexture,net.minecraft.client.renderer.texture.AbstractTexture \
+            2>/dev/null | grep '^API|' | grep -iE '====|MISSING|CTOR|load|upload|contents|image' || true
 
   fabric:
     name: Build Fabric
