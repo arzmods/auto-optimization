@@ -9,6 +9,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Throws detail away from block textures as they are loaded.
@@ -180,7 +182,20 @@ public final class PotatoTextures {
         return false;
     }
 
-    /** Finds the pixel getter/setter once, by their shape rather than their name. */
+    /**
+     * Finds the pixel getter and setter once.
+     *
+     * <p>Matching on the name alone is what made this silently do nothing:
+     * these methods have been called getPixelRGBA, getPixelABGR and getPixel
+     * across versions, and nothing guarantees the next name contains "pixel"
+     * at all. So candidates are found by <em>shape</em> - a getter is
+     * (int, int) returning int, a setter is (int, int, int) returning void -
+     * and the name is only used to rank them when there is more than one.
+     *
+     * <p>A shape-only match is accepted only when it is the sole candidate, so
+     * an unrelated method can never be mistaken for a pixel accessor. Whatever
+     * is picked is written to the log.
+     */
     private static synchronized boolean ensureResolved() {
         if (resolved) {
             return usable;
@@ -188,30 +203,92 @@ public final class PotatoTextures {
         resolved = true;
         MethodHandles.Lookup lookup = MethodHandles.lookup();
 
+        List<Method> getters = new ArrayList<>();
+        List<Method> setters = new ArrayList<>();
+
         for (Method method : NativeImage.class.getMethods()) {
             if (Modifier.isStatic(method.getModifiers())) {
                 continue;
             }
             Class<?>[] params = method.getParameterTypes();
-            if (getPixel == null
-                    && method.getReturnType() == int.class
-                    && params.length == 2 && params[0] == int.class && params[1] == int.class
-                    && method.getName().toLowerCase().contains("pixel")) {
-                getPixel = unreflect(lookup, method);
-            } else if (setPixel == null
-                    && method.getReturnType() == void.class
-                    && params.length == 3 && params[0] == int.class && params[1] == int.class && params[2] == int.class
-                    && method.getName().toLowerCase().contains("pixel")) {
-                setPixel = unreflect(lookup, method);
+            boolean allInts = true;
+            for (Class<?> param : params) {
+                if (param != int.class) {
+                    allInts = false;
+                    break;
+                }
+            }
+            if (!allInts) {
+                continue;
+            }
+            if (method.getReturnType() == int.class && params.length == 2) {
+                getters.add(method);
+            } else if (method.getReturnType() == void.class && params.length == 3) {
+                setters.add(method);
             }
         }
 
+        Method getter = pick(getters);
+        Method setter = pick(setters);
+
+        if (getter != null) {
+            getPixel = unreflect(lookup, getter);
+        }
+        if (setter != null) {
+            setPixel = unreflect(lookup, setter);
+        }
+
         usable = getPixel != null && setPixel != null;
-        if (!usable) {
-            PotatoPvP.LOGGER.warn("[Potato PvP] Could not find NativeImage pixel accessors; "
-                    + "the Textures setting will have no effect on this Minecraft version.");
+        if (usable) {
+            PotatoPvP.LOGGER.info("[Potato PvP] pixel accessors: {} / {}", getter.getName(), setter.getName());
+        } else {
+            PotatoPvP.LOGGER.warn("[Potato PvP] Could not find NativeImage pixel accessors "
+                    + "(getters found: {}, setters found: {}); the Textures setting will do nothing.",
+                    names(getters), names(setters));
         }
         return usable;
+    }
+
+    /** Highest scoring candidate, or the only one if none of them score. */
+    private static Method pick(List<Method> candidates) {
+        Method best = null;
+        int bestScore = 0;
+        for (Method candidate : candidates) {
+            int score = score(candidate.getName());
+            if (score > bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        if (best != null) {
+            return best;
+        }
+        return candidates.size() == 1 ? candidates.get(0) : null;
+    }
+
+    private static int score(String name) {
+        String lower = name.toLowerCase();
+        if (lower.contains("pixel")) {
+            return 3;
+        }
+        if (lower.contains("colour") || lower.contains("color")) {
+            return 2;
+        }
+        if (lower.contains("rgba") || lower.contains("abgr") || lower.contains("argb")) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private static String names(List<Method> methods) {
+        StringBuilder out = new StringBuilder();
+        for (Method method : methods) {
+            if (out.length() > 0) {
+                out.append(", ");
+            }
+            out.append(method.getName());
+        }
+        return out.length() == 0 ? "none" : out.toString();
     }
 
     private static MethodHandle unreflect(MethodHandles.Lookup lookup, Method method) {

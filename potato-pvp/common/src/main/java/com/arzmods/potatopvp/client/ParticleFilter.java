@@ -37,12 +37,6 @@ public final class ParticleFilter {
             "entity_effect",
             "instant_effect",
             "dragon_breath",
-            // mace / wind charge knock-ups
-            "wind_burst",
-            "gust",
-            "small_gust",
-            "gust_emitter_large",
-            "gust_emitter_small",
             // ranged tells
             "sonic_boom",
             "fishing",
@@ -71,6 +65,22 @@ public final class ParticleFilter {
             "ambient_entity_effect", "witch", "enchant", "dust_plume",
             "vault_connection", "trial_spawner_detection", "trial_spawner_detection_ominous",
             "ominous_spawning", "infested", "item_cobweb", "raid_omen", "trial_omen"
+    );
+
+    /**
+     * The mace smash and wind charge visuals. These are the ground slam you get
+     * when you fall onto someone with a mace, and they fill the screen at the
+     * exact moment you need to see what is happening. Dropped on None and
+     * Minimum, kept on Medium.
+     */
+    private static final Set<String> MACE_AND_WIND = Set.of(
+            "gust",
+            "small_gust",
+            "gust_emitter_large",
+            "gust_emitter_small",
+            "wind_burst",
+            "smash_attack",
+            "shockwave"
     );
 
     private static final String TOTEM = "totem_of_undying";
@@ -108,6 +118,9 @@ public final class ParticleFilter {
         }
 
         if (level == QualityLevel.MINIMUM) {
+            if (MACE_AND_WIND.contains(path)) {
+                return false;
+            }
             if (!COMBAT_CRITICAL.contains(path)) {
                 return false;
             }
