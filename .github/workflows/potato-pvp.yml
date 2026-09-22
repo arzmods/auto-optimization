@@ -121,7 +121,7 @@ jobs:
   smoke-test:
     name: Launch the game for real
     runs-on: ubuntu-latest
-    needs: fabric
+    needs: neoforge
     steps:
       - uses: actions/checkout@v4
 
@@ -141,8 +141,14 @@ jobs:
             libsdl2-2.0-0 libopenal1 > /dev/null
           echo "installed"
 
+      # NeoForge rather than Fabric. Loom's dev runtime remaps into a "named"
+      # namespace, and on 26.3 - which ships deobfuscated and forces
+      # intermediary mappings - that collides with Fabric API's access
+      # wideners before the game ever starts. NeoForge's dev client runs in the
+      # same namespace as the real game, so it does not have that problem. The
+      # mod is the same code either way.
       - name: Run the client until it settles, then stop it
-        working-directory: potato-pvp/fabric
+        working-directory: potato-pvp/neoforge
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
           GALLIUM_DRIVER: llvmpipe
@@ -157,10 +163,10 @@ jobs:
           echo "client stopped"
 
       - name: What the mod reported
-        working-directory: potato-pvp/fabric
+        working-directory: potato-pvp/neoforge
         run: |
-          LOG=run/logs/latest.log
-          if [ ! -f "$LOG" ]; then
+          LOG=$(find . -name latest.log -path "*run*" 2>/dev/null | head -1)
+          if [ -z "$LOG" ] || [ ! -f "$LOG" ]; then
             echo "no log written - the client did not get far enough to make one"
             ls -R run 2>/dev/null | head -40 || echo "no run directory at all"
             exit 0
@@ -188,7 +194,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: smoke-test-log
-          path: potato-pvp/fabric/run/logs/
+          path: |
+            potato-pvp/neoforge/run/logs/
+            potato-pvp/neoforge/runs/
           if-no-files-found: ignore
 
   fabric:
