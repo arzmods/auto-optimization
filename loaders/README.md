@@ -7,35 +7,38 @@ Almost nothing. Of the whole mod, only two things are loader-specific:
 | Piece | Fabric | NeoForge | Forge |
 |---|---|---|---|
 | Metadata | `fabric.mod.json` | `META-INF/neoforge.mods.toml` | `META-INF/mods.toml` |
-| Entrypoint (~20 lines) | `ModInitializer` + `CommandRegistrationCallback` | `@Mod` + `RegisterCommandsEvent` | `@Mod` + `RegisterCommandsEvent` |
+| Entrypoint | `ModInitializer` | `@Mod` | `@Mod` |
+| Commands | `CommandRegistrationCallback` | `RegisterCommandsEvent` | `RegisterCommandsEvent` |
+| Right-click a jukebox | `UseBlockCallback` | `PlayerInteractEvent.RightClickBlock` | `PlayerInteractEvent.RightClickBlock` |
+| Voice chat plugin | `voicechat` entrypoint | `@ForgeVoicechatPlugin` | `@ForgeVoicechatPlugin` |
 
 Everything else is shared:
 
-- `src/main/java/com/example/jukeboxhits/core/` — no loader imports, only vanilla + Brigadier + Gson + SLF4J
-- `src/main/resources/jukeboxhits/songs.json` — the code table
-- `src/main/resources/assets/jukeboxhits/` — sounds and names
-- `src/main/resources/data/jukeboxhits/jukebox_song/` — the song definitions
+- `src/main/java/com/example/jukeboxhits/core/` — no loader imports: vanilla, Brigadier,
+  Simple Voice Chat's API, Gson and SLF4J only
 
-The songs are plain resource-pack and datapack files. Minecraft reads those the same way
-on every loader, which is why the hard part ports for free.
+That includes the whole upload pipeline, the code library, every command, and playback.
+Simple Voice Chat's API is the same on all three loaders, so the audio path ports for
+free; only plugin *discovery* differs, which is why each loader has a thin annotated
+subclass of `JukeboxVoicechatPlugin`.
 
-## Minecraft version support — read this first
+## Minecraft version support
 
-This mod registers songs through the **`jukebox_song`** registry, which was added in
-**Minecraft 1.21** (snapshot 24w21a).
+The old resource-pack approach was locked to 1.21+ because it used the `jukebox_song`
+registry, which did not exist before then. **That constraint is gone.** Audio now goes
+through Simple Voice Chat, which does not care what Minecraft version you are on.
 
-| Version | Works? |
-|---|---|
-| 1.21 and newer | Yes — this is what the mod targets |
-| 1.20.6 and older | **No.** `jukebox_song` does not exist |
+The floor is now whatever Simple Voice Chat itself supports, which reaches back well
+before 1.21 and covers 1.20.1.
 
-On 1.20.1 and earlier, custom discs needed a registered `SoundEvent` plus a custom item
-class per song, which is a different mod, not a port of this one. 1.20.1 is still popular,
-so if you want it, treat it as a separate build — and budget real time for it.
+One thing does change below **1.20.5**: item components did not exist yet, so the default
+`giveCommand` will not parse. Use the old NBT form in the config instead:
 
-Within 1.21+, the thing most likely to break between versions is the
-`minecraft:jukebox_playable` component syntax. That lives in `giveCommand` in
-`config/jukeboxhits.json` precisely so it is a config edit, not a recompile.
+```json
+"giveCommand": "give %player% %disc%{display:{Name:%name%}}"
+```
+
+Nothing in the Java needs to change for that.
 
 ## Porting steps
 
@@ -67,11 +70,15 @@ shaped for it.
 ## Status
 
 The NeoForge and Forge sources here are **written but not compiled or tested** — this
-session had no network access to the NeoForge or Forge Maven repositories. Treat them as
-a correct starting point that still needs a real build. The two most likely spots to need
-a tweak:
+session had no network access to the NeoForge or Forge Maven repositories. They are a
+correct starting point that still needs a real build. Most likely to need a tweak:
 
 - The `@Mod` constructor signature. NeoForge also accepts `(IEventBus modBus)` and
   `(IEventBus modBus, ModContainer container)`; if the no-arg form is rejected, add the
   parameter.
 - `loaderVersion` / `versionRange` in the TOML files, which change per Minecraft version.
+- `PlayerInteractEvent.RightClickBlock` fires for both hands on some versions; if a song
+  starts twice, filter on `event.getHand()`.
+
+The shared core in `src/main/java/.../core/` is the same code the Fabric build uses, and
+its pure-Java parts are covered by `tools/run_tests.sh`.

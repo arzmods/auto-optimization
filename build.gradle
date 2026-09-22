@@ -9,6 +9,8 @@ group = "com.example"
 repositories {
 	// fabric-api and fabric-loader are not published to Maven Central.
 	maven { url = uri("https://maven.fabricmc.net/") }
+	// Simple Voice Chat's API, which the jukebox streams uploaded audio through.
+	maven { url = uri("https://maven.maxhenkel.de/repository/public") }
 	mavenCentral()
 }
 
@@ -22,6 +24,9 @@ dependencies {
 	// Fabric artifacts have to go through modImplementation so Loom remaps them.
 	modImplementation "net.fabricmc:fabric-loader:0.19.3"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:0.158.0+26.2"
+
+	// compileOnly: Simple Voice Chat provides this at runtime, so it must not be bundled.
+	compileOnly "de.maxhenkel.voicechat:voicechat-api:2.6.24"
 
 	include implementation("com.github.oshi:oshi-core:6.9.0")
 	include implementation("net.java.dev.jna:jna:5.17.0")

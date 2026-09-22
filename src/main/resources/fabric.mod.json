@@ -3,7 +3,7 @@
   "id": "hardwarescaler",
   "version": "1.0.0",
   "name": "Hardware Scaler",
-  "description": "Detects system hardware and applies tiered performance presets, plus a code-based jukebox (/song <code>).",
+  "description": "Detects system hardware and applies tiered performance presets, plus an upload-based jukebox with short song codes (/song <code>).",
   "authors": [
     "arzmods"
   ],
@@ -14,12 +14,16 @@
     ],
     "main": [
       "com.example.jukeboxhits.fabric.JukeboxFabric"
+    ],
+    "voicechat": [
+      "com.example.jukeboxhits.core.play.JukeboxVoicechatPlugin"
     ]
   },
   "depends": {
     "fabricloader": ">=0.19.0",
     "fabric-api": "*",
     "minecraft": "*",
-    "java": ">=25"
+    "java": ">=25",
+    "voicechat": ">=2.5.0"
   }
 }

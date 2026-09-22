@@ -22,3 +22,6 @@ run/
 # purpose with:
 #     git add -f src/main/resources/assets/jukeboxhits/sounds/song/song_1.ogg
 *.ogg
+
+# Local test output
+src/test/**/out/

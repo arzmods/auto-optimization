@@ -1,271 +1,171 @@
-# Jukebox Hits — play your own songs on a Minecraft jukebox
+# Jukebox Hits — upload songs, get a code, play it on a jukebox
 
-Type `/song 1` in game, get a music disc, drop it in a jukebox, hear your song.
-100 codes are wired up and ready. You supply the music.
+```
+/song upload https://example.com/track.mp3 Midnight Drive
+  -> Added as code 1
+
+/song 1          -> you get a disc
+put it in a jukebox -> it plays, for everyone nearby, in 3D
+```
+
+Short numeric codes, like Roblox. No rebuilding, no resource packs, no restarts.
+Songs are uploaded once and live on the server.
 
 ---
 
-## Which Minecraft versions and loaders
+## Requirements
 
-**Minecraft 1.21 or newer.** This mod adds songs through the `jukebox_song` registry,
-which Mojang added in 1.21. On 1.20.6 and older it does not exist, so this approach
-cannot work there — 1.20.1 would need a genuinely different mod, not a port.
-
-| Loader | Status |
+| | |
 |---|---|
-| **Fabric** | Built and ready — this repo |
-| **NeoForge** (1.21+) | Source written, in `loaders/neoforge/`, needs a build |
-| **Forge** (1.21+) | Source written, in `loaders/forge/`, needs a build |
+| **Minecraft** | Anything Simple Voice Chat supports, including 1.20.1 |
+| **Loader** | Fabric (built) · NeoForge / Forge (source in `loaders/`) |
+| **Required mod** | **Simple Voice Chat** — server *and* every client |
 
-The reason all three are cheap: the songs themselves are plain resource-pack and
-datapack files, which every loader reads identically. Only the ~20-line entrypoint
-differs. See [`loaders/README.md`](loaders/README.md).
+On **1.20.4 and older**, item components did not exist yet, so set `giveCommand` in the
+config to the older NBT form: `give %player% %disc%{display:{Name:%name%}}`
 
----
+**Why Simple Voice Chat is mandatory:** vanilla Minecraft can only play audio that shipped
+with the game or a resource pack. It has no way to play a file it has never seen. Simple
+Voice Chat already holds a live audio connection to every client, so this mod streams your
+song down that pipe. AudioPlayer and Custom Discs work the same way — there is no way
+around it.
 
-## How it works (the short version)
+## Install
 
-Minecraft can only play `.ogg` audio that ships inside the game or a mod. So this mod
-bakes your songs in at build time:
+1. Install **Fabric Loader** from [fabricmc.net/use](https://fabricmc.net/use).
+2. Put these in your `mods` folder, matching your Minecraft version:
+   - Fabric API
+   - **Simple Voice Chat**
+   - this mod
+3. On a server, the server needs all three too. Every player needs Simple Voice Chat.
 
-```
-your song.mp3  →  song_1.ogg  →  baked into the mod  →  /song 1  →  disc  →  jukebox
-```
+## Using it
 
-Three files control everything:
-
-| File | What it is |
-|---|---|
-| `src/main/resources/jukeboxhits/songs.json` | The 100 code slots. You edit this. |
-| `src/main/resources/assets/jukeboxhits/sounds/song/` | Where the `.ogg` files live. |
-| `tools/build_songs.py` | Bakes both into the files Minecraft reads. |
-
-Everything under `assets/jukeboxhits/sounds.json`, `assets/jukeboxhits/lang/` and
-`data/jukeboxhits/jukebox_song/` is **generated** — never edit those by hand, the
-generator overwrites them.
-
----
-
-## Step 1 — Install ffmpeg
-
-This converts your music into the format Minecraft needs. One-time setup.
-
-- **Windows:** open PowerShell, run `winget install ffmpeg`
-- **Mac:** `brew install ffmpeg`
-- **Linux:** `sudo apt install ffmpeg`
-
-Check it worked: `ffmpeg -version` should print something.
-
-## Step 2 — Put your music in a folder
-
-Make a folder anywhere, e.g. `~/Music/for-minecraft`, and drop your audio in it.
-`.mp3`, `.wav`, `.flac`, `.m4a`, `.aac` and `.opus` all work.
-
-The order matters — files get codes in alphabetical order. Name them `01 - ...`,
-`02 - ...` if you want a specific order.
-
-## Step 3 — Convert them
-
-On Mac or Linux:
-
-```bash
-tools/convert_to_ogg.sh ~/Music/for-minecraft
-```
-
-On Windows, use Git Bash to run that same line — or convert each song by hand:
-
-```bash
-ffmpeg -i "your song.mp3" -c:a libvorbis -q:a 5 -ac 1 -ar 44100 \
-  src/main/resources/assets/jukeboxhits/sounds/song/song_1.ogg
-```
-
-This produces `song_1.ogg`, `song_2.ogg`, ... in the sounds folder.
-
-> **Why mono (`-ac 1`)?** Minecraft positions jukebox audio in 3D. Stereo files don't
-> fade properly as you walk away — they just play at full volume everywhere.
-
-## Step 4 — Fill in the titles
-
-Open `src/main/resources/jukeboxhits/songs.json`. Each line is one code:
-
-```json
-{"code": 1, "id": "song_1", "title": "Slot 1 - empty", "artist": "", "file": "song_1.ogg", "length_seconds": 180, "enabled": false}
-```
-
-Change `title`, `artist`, and flip `enabled` to `true`:
-
-```json
-{"code": 1, "id": "song_1", "title": "Midnight Drive", "artist": "Some Artist", "file": "song_1.ogg", "length_seconds": 180, "enabled": true}
-```
-
-Leave `id` and `code` alone. Ignore `length_seconds` — it gets measured from the
-actual audio file automatically.
-
-## Step 5 — Bake it in
-
-```bash
-python3 tools/build_songs.py
-```
-
-It prints exactly what got baked in:
+### Add a song
 
 ```
-baked in 2 song(s)
-  /song 1    Some Artist - Midnight Drive  (3m24s)
-  /song 2    Some Artist - Another Track   (2m51s)
-
-98 slot(s) still empty (enabled: false)
+/song upload <direct-url> <name>
 ```
 
-If a slot is enabled but its `.ogg` is missing, it tells you which file it expected.
+The URL has to be a **direct link to the file**, ending in `.mp3` or `.wav` — not a
+YouTube or Spotify page. The server downloads it, decodes it, and tells you its code.
 
-## Step 6 — Build the mod
+Redirects are rejected on purpose, so "share links" from cloud drives usually won't work;
+use the direct-download form of the link.
 
-```bash
-./gradlew build
-```
-
-There is no Gradle wrapper committed yet. If `./gradlew` is missing, either generate it
-once with `gradle wrapper` (needs Gradle installed), or just run `gradle build`.
-
-The finished `.jar` lands in `build/libs/`. Drop it in your `mods` folder along with
-**Fabric API**.
-
-> **Heads up:** `build.gradle` asks for Java 25. If your JDK is older, either install
-> Java 25 or lower the two `VERSION_25` lines and `options.release`.
-
-## Step 7 — Play
-
-In game:
+### Play it
 
 ```
-/song 1          get the disc for code 1
-/song list       see every installed code
-/song list 2     page 2
-/song search mid find a code by title or artist
-/song reload     re-read the config file
+/song 1           get a disc for code 1, then put it in a jukebox
+/song play 1      play where you stand, no disc needed
+/song stop        stop everything
 ```
 
-Put the disc in a jukebox. Done.
+Right-click the jukebox with an empty hand to stop it.
 
----
+### Browse
 
-## Adding more songs later
-
-Repeat steps 3–6. Adding a song means rebuilding the mod — that's the tradeoff of the
-simple approach. If you want people to add songs without rebuilding, that's the
-upload-based version (see *Where this could go* below).
-
----
+```
+/song list        every code
+/song list 2      page 2
+/song search mid  find a code by name
+/song remove 1    delete a song and its file
+/song reload      re-read the config
+```
 
 ## Settings
 
-First launch writes `config/jukeboxhits.json`:
+`config/jukeboxhits/config.json`, created on first launch:
 
 ```json
 {
+  "maxUploadMb": 20,
+  "maxSongs": 500,
+  "playbackDistance": 48.0,
+  "gain": 1.0,
+  "allowAllPlayersUpload": false,
+  "allowAllPlayersDisc": true,
   "discItem": "minecraft:music_disc_13",
-  "giveCommand": "give %player% %disc%[minecraft:jukebox_playable={song:\"%song%\"}]",
-  "allowAllPlayers": false
+  "giveCommand": "give %player% %disc%[minecraft:custom_name=%name%]"
 }
 ```
 
-- **discItem** — which disc item you get. Any music disc works.
-- **giveCommand** — how the disc is built. Vanilla parses this string, so if a
-  Minecraft update changes the component syntax it's a one-line fix here, no recompile.
-- **allowAllPlayers** — `false` means only operators can run `/song`. Set `true` to let
-  everyone use it.
+- **allowAllPlayersUpload** — `false` means only operators can upload or delete. Turn this
+  on only if you trust everyone on the server; uploads use disk and bandwidth.
+- **allowAllPlayersDisc** — anyone can get a disc for a song that already exists.
+- **playbackDistance** — how far the music carries, in blocks.
+- **giveCommand** — vanilla parses this, so a component-syntax change in a future
+  Minecraft version is a config edit rather than a recompile.
 
-Run `/song reload` after editing.
+Songs live in `config/jukeboxhits/songs/`, and the code table is `songs.json` next to it.
 
----
+## How the pieces fit
+
+```
+/song upload  ->  AudioStore downloads the file
+                       |
+                  AudioLoader decodes it   (MP3 via Simple Voice Chat, WAV via the JDK)
+                       |
+                  Pcm converts to 48kHz mono, 20ms frames
+                       |
+/song 1       ->  disc named "♪#1 Midnight Drive"
+                       |
+right-click a jukebox  ->  PlaybackManager opens a positional audio channel there
+```
+
+The code travels in the **disc's display name**, not in NBT. Display names are one of the
+few item APIs that have been stable across Minecraft versions, so discs keep working
+across updates.
 
 ## If something goes wrong
 
-**`/song 1` says "Could not build the disc"**
-The component syntax doesn't match your Minecraft version. Open
-`config/jukeboxhits.json` and change `giveCommand` to the alternate form:
+**"Simple Voice Chat is not running on this server"**
+It isn't installed, or it failed to start. Check the server log for `Connected to Simple
+Voice Chat` at startup.
 
-```json
-"giveCommand": "give %player% %disc%[minecraft:jukebox_playable=\"%song%\"]"
+**"That link redirects"**
+Use the direct file URL. Cloud-drive share pages redirect; their direct-download links
+usually don't.
+
+**"That file downloaded but would not decode"**
+Not real audio, or an MP3 variant the decoder rejects. Convert it to `.wav` and re-upload:
+`ffmpeg -i in.mp3 -c:a pcm_s16le -ac 1 -ar 48000 out.wav`
+
+**Playing the disc does nothing**
+You do not have Simple Voice Chat installed *on your client*, or voice chat is muted.
+
+**Volume doesn't fade with distance**
+It should — audio is converted to mono and positioned at the jukebox. If it doesn't,
+Simple Voice Chat is probably not the one playing it.
+
+**"Could not build the disc"**
+Your Minecraft version wants different component syntax. Edit `giveCommand` in the config,
+then `/song reload`.
+
+## Tests
+
+```bash
+tools/run_tests.sh
 ```
 
-Then `/song reload`.
+Covers audio conversion (channel mixing, resampling, framing, gain clipping), WAV
+decoding end to end, and disc-code encoding. Pure Java — no Minecraft, no Gradle, no
+network needed.
 
-**The game logs a datapack error about `sound_event`**
-Open the generated files in `src/main/resources/data/jukeboxhits/jukebox_song/` and
-change:
+## About what you upload
 
-```json
-"sound_event": { "sound_id": "jukeboxhits:song_1" }
-```
+Uploading music you don't own, to a server other people can hear, is a public
+performance — different from keeping a file on your own machine. On a private server with
+friends, realistically nobody cares. On a public one, it's your exposure, not the mod's.
 
-to the plain string form:
+If you distribute the mod, it ships with **no music in it** — the library starts empty and
+each server fills its own. That's deliberate, and it's what keeps the mod itself
+distributable. Sources for music that's actually free to use:
 
-```json
-"sound_event": "jukeboxhits:song_1"
-```
+- [freepd.com](https://freepd.com) — CC0, no attribution needed
+- [OpenGameArt](https://opengameart.org) — filter to CC0, written for games
+- [Musopen](https://musopen.org) — public domain classical
+- [Incompetech](https://incompetech.com) / [ccMixter](http://dig.ccmixter.org) — CC-BY, credit the artist
 
-If that's what your version wants, edit the same line in `tools/build_songs.py` so
-future runs generate it correctly.
-
-**The disc goes in but there's no sound**
-The `.ogg` isn't where the generator expects. Re-run `python3 tools/build_songs.py` —
-it lists any missing files.
-
-**Volume doesn't fade as you walk away**
-The file is stereo. Re-convert it with `-ac 1`.
-
-**`/song` isn't recognised at all**
-Fabric API isn't installed, or the mod didn't load. Check the log for
-`Jukebox Hits ready with N song(s)`.
-
----
-
-## About shipping this
-
-**Do not distribute the mod with commercial music baked in.** A jar containing chart
-songs is distributing copyrighted recordings — it will get taken down and it puts you
-personally at risk. This is exactly why Custom Discs and AudioPlayer make users supply
-their own files.
-
-What you *can* ship:
-
-- The mod with **zero songs**, and let people add their own (steps 2–6 above).
-- The mod with music you made, or music that's actually licensed for it:
-  - [Free Music Archive](https://freemusicarchive.org) — filter by CC licence
-  - [Incompetech](https://incompetech.com) — Kevin MacLeod, CC-BY
-  - [ccMixter](http://dig.ccmixter.org)
-  - [Pixabay Music](https://pixabay.com/music/)
-  - YouTube Audio Library (in YouTube Studio)
-
-Check each track's licence. Most CC licences just require crediting the artist — put
-them in the `artist` field and they show up on the disc tooltip.
-
----
-
-## Where this could go
-
-This is the simple version on purpose. The upgrade path, roughly in order of effort:
-
-1. **Load songs from a folder at runtime** instead of baking them in — no rebuild to add
-   music, but needs dynamic sound registration.
-2. **Upload from in game** — `/song upload <url>`, server stores the file, hands back a
-   code. This is the real Roblox model.
-3. **Streaming via Simple Voice Chat** — what AudioPlayer and Custom Discs do. Removes
-   the resource-pack limit entirely and gives proper positional audio.
-
-Step 2 is where it stops being a personal jukebox and starts being something other
-servers would install.
-
-## A note on packaging
-
-Right now this lives in the same jar as Hardware Scaler (a second `main` entrypoint in
-`fabric.mod.json`). That's fine for testing. If you want to release it, move
-`src/main/java/com/example/jukeboxhits/`, `src/main/resources/jukeboxhits/`,
-`assets/jukeboxhits/` and `data/jukeboxhits/` into a fresh project with its own mod id —
-nobody installing a jukebox wants a render-distance tweaker bundled in.
-
-The code is already split for that: `core/` has no loader imports at all, and each
-loader's entrypoint is a separate ~20-line class. [`loaders/README.md`](loaders/README.md)
-covers building for all three at once.
+⚠️ "No Copyright Music" and **NCS** are misleading names — those tracks *are* copyrighted,
+just licensed for use with credit. Read the licence, not the channel name.

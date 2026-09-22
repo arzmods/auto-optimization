@@ -25,3 +25,11 @@ mandatory = true
 versionRange = "[1.21,)"
 ordering = "NONE"
 side = "BOTH"
+
+# Simple Voice Chat carries the audio; without it nothing can play.
+[[dependencies.jukeboxhits]]
+modId = "voicechat"
+mandatory = true
+versionRange = "[2.5.0,)"
+ordering = "NONE"
+side = "BOTH"
