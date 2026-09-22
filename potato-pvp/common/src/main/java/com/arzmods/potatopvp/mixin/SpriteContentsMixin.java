@@ -47,6 +47,15 @@ public class SpriteContentsMixin {
         potatopvp$reduce("increaseMipLevel");
     }
 
+    /**
+     * Last resort. Runs immediately before the sprite is handed to the GPU, so
+     * if the other two never bound, this still catches it.
+     */
+    @Inject(method = "uploadFirstFrame", at = @At("HEAD"), require = 0)
+    private void potatopvp$onUpload(CallbackInfo ci) {
+        potatopvp$reduce("uploadFirstFrame");
+    }
+
     @Unique
     private void potatopvp$reduce(String via) {
         if (this.potatopvp$reduced) {
