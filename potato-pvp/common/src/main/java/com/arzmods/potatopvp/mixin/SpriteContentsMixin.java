@@ -1,6 +1,7 @@
 package com.arzmods.potatopvp.mixin;
 
 import com.arzmods.potatopvp.PotatoConfig;
+import com.arzmods.potatopvp.PotatoPvP;
 import com.arzmods.potatopvp.client.PotatoAnimations;
 import com.arzmods.potatopvp.client.PotatoTextures;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -9,7 +10,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Where the Textures and Animations settings actually bite.
@@ -18,6 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * block face, in other words. Catching it here means the reduced pixels are
  * what gets stitched, mipmapped and uploaded, so the saving is real GPU memory
  * and not just a filter drawn on top.
+ *
+ * <p>Both settings are applied by rewriting pixels and nothing else. Nothing
+ * here changes an image's size, its frame count, or what the sprite reports
+ * about itself, because the atlas upload is sized from exactly those things and
+ * a wrong answer stops the game booting rather than merely looking odd.
  */
 @Mixin(SpriteContents.class)
 public class SpriteContentsMixin {
@@ -29,26 +34,22 @@ public class SpriteContentsMixin {
      */
     @Inject(method = "<init>", at = @At("RETURN"), require = 0)
     private void potatopvp$reduceDetail(CallbackInfo ci) {
-        SpriteContents self = (SpriteContents) (Object) this;
-        NativeImage image = PotatoTextures.findImage(self);
-        if (image != null) {
-            PotatoTextures.degrade(self.name(), self.width(), self.height(), image, PotatoConfig.textures());
-        }
-    }
+        try {
+            SpriteContents self = (SpriteContents) (Object) this;
+            NativeImage image = PotatoTextures.findImage(self);
+            if (image == null) {
+                return;
+            }
 
-    /**
-     * Reporting a sprite as not animated is what freezes it on frame one.
-     *
-     * <p>The old createTicker hook is gone in 26.3 - animation now runs through
-     * createAnimationState - but callers still gate on isAnimated(), and
-     * answering false here is far safer than returning a null animation state
-     * into rendering code that may not expect one.
-     */
-    @Inject(method = "isAnimated", at = @At("HEAD"), cancellable = true, require = 0)
-    private void potatopvp$freezeAnimation(CallbackInfoReturnable<Boolean> cir) {
-        SpriteContents self = (SpriteContents) (Object) this;
-        if (!PotatoAnimations.allowsAnimation(self.name())) {
-            cir.setReturnValue(false);
+            if (!PotatoAnimations.allowsAnimation(self.name())) {
+                PotatoTextures.freezeFrames(self.width(), self.height(), image);
+            }
+
+            PotatoTextures.degrade(self.name(), self.width(), self.height(), image, PotatoConfig.textures());
+        } catch (Throwable t) {
+            // A texture that fails to load takes the whole atlas, and therefore
+            // the whole game, down with it. Never let that be this mod's doing.
+            PotatoPvP.LOGGER.warn("[Potato PvP] Skipped reducing a sprite", t);
         }
     }
 }

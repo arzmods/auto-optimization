@@ -107,7 +107,7 @@ seconds and is normal.
 
 | Level | What you get |
 | ----- | ------------ |
-| **None** | Every animated block texture freezes on its first frame - water, lava, fire, portals, sea lanterns, prismarine, magma, conduits. View bobbing, entity shadows, enchantment glint movement, the nausea warp, the speed FOV stretch and the damage tilt are all off. |
+| **None** | Every animated block texture is frozen on its first frame - water, lava, fire, portals, sea lanterns, prismarine, magma, conduits. View bobbing, entity shadows, enchantment glint movement, the nausea warp, the speed FOV stretch and the damage tilt are all off. |
 | **Minimum** | Water, lava and fire still animate because you need to read them; everything else freezes. Bobbing, shadows and screen effects stay off. |
 | **Medium** | All texture animations run normally. Bobbing, shadows and screen effects come back at half strength. |
 
@@ -187,11 +187,12 @@ Also update `"minecraft": "~26.3"` in
 
 ## 6. Known limitations
 
-**Not tested in a running game.** Both versions compile and CI produces jars,
-but nothing here has been launched in Minecraft. Mixins attach at runtime, not
-at compile time, so the honest state is "builds cleanly, unproven in play". If
-a setting appears to do nothing, that is the failure mode to suspect first -
-the mixins are set to fail quietly rather than crash your game.
+**Lightly tested.** 1.0.0 did not boot: freezing animations by reporting
+sprites as not animated corrupted the texture atlas upload, because 26.3 sizes
+that upload from exactly that flag. 1.0.1 freezes animations by rewriting
+pixels instead, which cannot affect it. Beyond "it starts", the three settings
+have had little real play testing - if one appears to do nothing, check
+`latest.log` for lines starting with `[Potato PvP]`.
 
 **The full screen totem animation still plays.** Particles from a pop are
 capped to two, but the giant spinning totem cannot be suppressed: the hook it

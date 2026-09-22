@@ -246,4 +246,39 @@ public final class PotatoTextures {
         PotatoPvP.LOGGER.warn("[Potato PvP] Could not reach the sprite image field; "
                 + "the Textures setting will have no effect on this Minecraft version.");
     }
+
+    /**
+     * Copies the first animation frame over every later frame, so an animated
+     * sprite still ticks but never appears to change.
+     *
+     * <p>This is deliberately not done by making isAnimated() report false.
+     * Minecraft 26.3 uses that flag to decide how much of the image to upload
+     * to the atlas, and lying about it produces
+     * "Dest texture is not large enough to write a rectangle", which kills the
+     * resource reload and stops the game booting. Rewriting pixels cannot
+     * affect any of that - the image keeps its real size and frame count.
+     */
+    public static void freezeFrames(int frameWidth, int frameHeight, NativeImage image) {
+        if (image == null || frameWidth <= 0 || frameHeight <= 0) {
+            return;
+        }
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (height <= frameHeight) {
+            return; // single frame, nothing to freeze
+        }
+        if (!ensureResolved()) {
+            return;
+        }
+        try {
+            for (int y = frameHeight; y < height; y++) {
+                int sourceY = y % frameHeight;
+                for (int x = 0; x < width; x++) {
+                    setPixel.invoke(image, x, y, (int) getPixel.invoke(image, x, sourceY));
+                }
+            }
+        } catch (Throwable t) {
+            PotatoPvP.LOGGER.warn("[Potato PvP] Could not freeze an animated sprite", t);
+        }
+    }
 }
