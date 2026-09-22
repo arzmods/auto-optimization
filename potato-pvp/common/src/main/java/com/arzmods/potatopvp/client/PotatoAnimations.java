@@ -49,4 +49,23 @@ public final class PotatoAnimations {
         }
         return false;
     }
+
+    /**
+     * How fast an end crystal is allowed to spin and bob.
+     *
+     * <p>A crystal's motion comes entirely from the age its render state is
+     * given, so scaling that number is all it takes - no model, renderer or
+     * texture is touched, and a crystal that is standing still is still a
+     * crystal with a hitbox where you left it.
+     *
+     * @param ageInTicks the age the renderer worked out
+     * @return the age to actually use
+     */
+    public static float crystalAge(float ageInTicks) {
+        return switch (PotatoConfig.animations()) {
+            case NONE -> 0.0F;      // dead still
+            case MINIMUM -> ageInTicks * 0.2F;  // a slow turn, still obviously a crystal
+            case MEDIUM -> ageInTicks;          // vanilla
+        };
+    }
 }

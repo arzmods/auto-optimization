@@ -89,50 +89,29 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
-      - name: Everything needed for the next build
+      - name: Last unknown - how a standalone texture is loaded
         working-directory: potato-pvp/neoforge
         run: |
           gradle -q apiJars --no-daemon > /dev/null 2>&1 || true
 
-          echo "=== NativeImage, every method (the pixel accessors matter most) ==="
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=com.mojang.blaze3d.platform.NativeImage 2>/dev/null | grep '^API|' || true
-
-          echo "=== end crystal classes ==="
+          echo "=== texture contents classes ==="
           gradle -q apiClasses --no-daemon \
-            -PclassContains=endcrystal 2>/dev/null | grep '^API|' || true
+            -PclassContains=texturecontents 2>/dev/null | grep '^API|' || true
 
-          echo "=== mace / gust / wind classes ==="
-          gradle -q apiClasses --no-daemon \
-            -PclassContains=gust,windcharge,shockwave,mace 2>/dev/null | grep '^API|' || true
-
-          echo "=== entity animation classes ==="
-          gradle -q apiClasses --no-daemon \
-            -PclassContains=entityrenderstate,entitymodel,walkanimation 2>/dev/null | grep '^API|' || true
-
-          echo "=== non-atlas texture classes ==="
-          gradle -q apiClasses --no-daemon \
-            -PclassContains=simpletexture,abstracttexture,dynamictexture 2>/dev/null | grep '^API|' || true
-
-          echo "=== likely crystal renderer / render state ==="
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.renderer.entity.EndCrystalRenderer,net.minecraft.client.renderer.entity.state.EndCrystalRenderState \
-            2>/dev/null | grep '^API|' || true
-
-          echo "=== EntityRenderState fields ==="
+          echo "=== SimpleTexture, every method and field ==="
           gradle -q apiMethods --no-daemon -PshowFields \
-            -PtypeNames=net.minecraft.client.renderer.entity.state.EntityRenderState 2>/dev/null \
+            -PtypeNames=net.minecraft.client.renderer.texture.SimpleTexture 2>/dev/null \
             | grep '^API|' || true
 
-          echo "=== EntityModel ==="
-          gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.model.EntityModel 2>/dev/null | grep '^API|' \
-            | grep -iE '====|MISSING|setup|anim|root|pose' || true
+          echo "=== TextureContents ==="
+          gradle -q apiMethods --no-daemon -PshowFields \
+            -PtypeNames=net.minecraft.client.renderer.texture.TextureContents 2>/dev/null \
+            | grep '^API|' || true
 
-          echo "=== SimpleTexture / AbstractTexture ==="
+          echo "=== NativeImage pixel accessors (confirm) ==="
           gradle -q apiMethods --no-daemon \
-            -PtypeNames=net.minecraft.client.renderer.texture.SimpleTexture,net.minecraft.client.renderer.texture.AbstractTexture \
-            2>/dev/null | grep '^API|' | grep -iE '====|MISSING|CTOR|load|upload|contents|image' || true
+            -PtypeNames=com.mojang.blaze3d.platform.NativeImage 2>/dev/null | grep '^API|' \
+            | grep -iE '====|MISSING|pixel|color|rgba|abgr' || true
 
   fabric:
     name: Build Fabric
