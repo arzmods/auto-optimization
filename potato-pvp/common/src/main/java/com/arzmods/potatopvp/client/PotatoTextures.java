@@ -37,6 +37,11 @@ public final class PotatoTextures {
      * Minecraft versions (getPixelRGBA -> getPixel, ...). Looking them up once
      * by shape rather than by name means this class keeps working either way.
      */
+    private static final java.util.concurrent.atomic.AtomicInteger SEEN =
+            new java.util.concurrent.atomic.AtomicInteger();
+    private static final java.util.concurrent.atomic.AtomicInteger REDUCED =
+            new java.util.concurrent.atomic.AtomicInteger();
+
     private static MethodHandle getPixel;
     private static MethodHandle setPixel;
     private static boolean resolved;
@@ -54,11 +59,24 @@ public final class PotatoTextures {
      * @param image       the decoded png, modified in place
      * @param level       how much detail to keep
      */
-    public static void degrade(Identifier name, int frameWidth, int frameHeight, NativeImage image, QualityLevel level) {
+    public static void degrade(Identifier name, int frameWidth, int frameHeight, NativeImage image, QualityLevel level, String via) {
+        int seen = SEEN.incrementAndGet();
+        if (seen <= 3) {
+            PotatoPvP.LOGGER.info("[Potato PvP] sprite #{} via {} name={} frame={}x{} image={}x{} level={}",
+                    seen, via, name, frameWidth, frameHeight,
+                    image == null ? -1 : image.getWidth(), image == null ? -1 : image.getHeight(), level);
+        }
+        if (seen % 400 == 0) {
+            PotatoPvP.LOGGER.info("[Potato PvP] {} sprites seen, {} reduced", seen, REDUCED.get());
+        }
+
         if (image == null || frameWidth <= 0 || frameHeight <= 0) {
             return;
         }
         if (!affects(name)) {
+            if (seen <= 3) {
+                PotatoPvP.LOGGER.info("[Potato PvP] not a block sprite, left alone: {}", name);
+            }
             return;
         }
         int divisions = divisionsFor(level);
@@ -87,6 +105,11 @@ public final class PotatoTextures {
                     int maxY = Math.min(blockY + blockHeight, height);
                     averageBlock(image, blockX, blockY, maxX, maxY);
                 }
+            }
+            int done = REDUCED.incrementAndGet();
+            if (done == 1) {
+                PotatoPvP.LOGGER.info("[Potato PvP] first sprite actually reduced: {} ({}x{} blocks of {}x{})",
+                        name, divisions, divisions, blockWidth, blockHeight);
             }
         } catch (Throwable t) {
             usable = false;
