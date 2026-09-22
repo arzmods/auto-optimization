@@ -33,7 +33,7 @@ only come back on Medium.
 
 ### Textures
 
-Only block textures and end crystals are touched. Items, mobs, players and the
+Block textures and end crystals are touched. Items, mobs, players and the
 interface keep their real textures on every level.
 
 * **None** - one flat colour per texture. This is the "no textures" look.

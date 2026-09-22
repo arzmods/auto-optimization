@@ -34,6 +34,9 @@ public final class PotatoTextures {
     /** Sprite name prefixes we are willing to flatten. */
     private static final String[] AFFECTED_PREFIXES = { "block/", "particle/" };
 
+    /** Matches the end crystal's texture, which lives outside any atlas. */
+    private static final String END_CRYSTAL = "end_crystal";
+
     /**
      * NativeImage's pixel accessors have been renamed more than once across
      * Minecraft versions (getPixelRGBA -> getPixel, ...). Looking them up once
@@ -179,7 +182,10 @@ public final class PotatoTextures {
                 return true;
             }
         }
-        return false;
+        // End crystals are the one thing outside the block atlas worth
+        // reducing: in crystal PvP there can be a great many of them on screen
+        // at once, and unlike a player skin nothing is read off their surface.
+        return path.contains(END_CRYSTAL);
     }
 
     /**
@@ -316,13 +322,25 @@ public final class PotatoTextures {
         }
         try {
             ensureImageField(spriteContents.getClass());
-            return imageField == null ? null : (NativeImage) imageField.get(spriteContents);
+            if (imageField == null) {
+                return null;
+            }
+            Object value = imageField.get(spriteContents);
+            if (value == null) {
+                return null;
+            }
+            if (imageFieldIsArray) {
+                NativeImage[] levels = (NativeImage[]) value;
+                return levels.length == 0 ? null : levels[0];
+            }
+            return (NativeImage) value;
         } catch (Throwable t) {
             return null;
         }
     }
 
     private static java.lang.reflect.Field imageField;
+    private static boolean imageFieldIsArray;
     private static boolean imageFieldSearched;
 
     private static synchronized void ensureImageField(Class<?> type) {
@@ -330,16 +348,28 @@ public final class PotatoTextures {
             return;
         }
         imageFieldSearched = true;
+
+        // A plain NativeImage field is the usual shape, but some versions keep
+        // only the mipmap pyramid, so an array of them counts too.
         for (Class<?> current = type; current != null && current != Object.class; current = current.getSuperclass()) {
             for (java.lang.reflect.Field field : current.getDeclaredFields()) {
-                if (field.getType() == NativeImage.class && !Modifier.isStatic(field.getModifiers())) {
-                    try {
-                        field.setAccessible(true);
-                        imageField = field;
-                        return;
-                    } catch (Throwable ignored) {
-                        // keep looking
-                    }
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+                boolean plain = field.getType() == NativeImage.class;
+                boolean array = field.getType() == NativeImage[].class;
+                if (!plain && !array) {
+                    continue;
+                }
+                try {
+                    field.setAccessible(true);
+                    imageField = field;
+                    imageFieldIsArray = array;
+                    PotatoPvP.LOGGER.info("[Potato PvP] sprite image field: {}.{}{}",
+                            current.getSimpleName(), field.getName(), array ? " (array)" : "");
+                    return;
+                } catch (Throwable ignored) {
+                    // keep looking
                 }
             }
         }

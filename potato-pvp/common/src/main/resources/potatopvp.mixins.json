@@ -5,6 +5,7 @@
   "client": [
     "EntityRendererMixin",
     "ParticleEngineMixin",
+    "SimpleTextureMixin",
     "SpriteContentsMixin"
   ],
   "injectors": {
