@@ -1,10 +1,10 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version '1.17.12'
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'java'
 }
 
-version = "1.0.0"
-group = "com.example"
+version = "${mod_version}+${minecraft_version}"
+group = maven_group
 
 repositories {
 	// fabric-api and fabric-loader are not published to Maven Central.
@@ -15,29 +15,40 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:26.2"
+	minecraft "com.mojang:minecraft:${minecraft_version}"
 
-	// The source in this repo uses Mojang names (net.minecraft.client.Minecraft,
-	// options.renderDistance(), CommandSourceStack), so Loom needs the official mappings.
+	// The source uses Mojang names (Minecraft, CommandSourceStack, Blocks), so Loom
+	// needs the official mappings rather than Yarn.
 	mappings loom.officialMojangMappings()
 
-	// Fabric artifacts have to go through modImplementation so Loom remaps them.
-	modImplementation "net.fabricmc:fabric-loader:0.19.3"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:0.158.0+26.2"
+	// Fabric artifacts go through modImplementation so Loom remaps them.
+	modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
 	// compileOnly: Simple Voice Chat provides this at runtime, so it must not be bundled.
-	compileOnly "de.maxhenkel.voicechat:voicechat-api:2.6.24"
+	compileOnly "de.maxhenkel.voicechat:voicechat-api:${voicechat_api_version}"
 
 	include implementation("com.github.oshi:oshi-core:6.9.0")
 	include implementation("net.java.dev.jna:jna:5.17.0")
 	include implementation("net.java.dev.jna:jna-platform:5.17.0")
 }
 
+def javaTarget = Integer.parseInt(java_version)
+
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	it.options.release = javaTarget
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.toVersion(javaTarget)
+	targetCompatibility = JavaVersion.toVersion(javaTarget)
+}
+
+processResources {
+	inputs.property "version", project.version
+	inputs.property "java_version", java_version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version, "java_version": java_version
+	}
 }

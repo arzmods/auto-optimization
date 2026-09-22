@@ -17,9 +17,13 @@ Songs are uploaded once and live on the server.
 
 | | |
 |---|---|
-| **Minecraft** | Anything Simple Voice Chat supports, including 1.20.1 |
+| **Minecraft** | 26.3 · 1.21.8 · 1.21.1 · 1.20.1 |
 | **Loader** | Fabric (built) · NeoForge / Forge (source in `loaders/`) |
 | **Required mod** | **Simple Voice Chat** — server *and* every client |
+
+Pick a target with `tools/set_version.sh 26.3` before building — one jar per Minecraft
+version. The full matrix, and which loaders actually exist per version, is in
+[`loaders/README.md`](loaders/README.md).
 
 On **1.20.4 and older**, item components did not exist yet, so set `giveCommand` in the
 config to the older NBT form: `give %player% %disc%{display:{Name:%name%}}`
