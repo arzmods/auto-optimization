@@ -38,3 +38,15 @@ if (-not (Test-Path 'paper.jar') -or $installed -ne $McVersion) {
 
 New-Item 'plugins' -ItemType Directory -Force | Out-Null
 Write-Host 'Everything is installed.'
+
+# --- 3. Show the addresses people can use to join ---
+$ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+    Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
+    Select-Object -ExpandProperty IPAddress
+Write-Host ''
+Write-Host '=================== HOW TO JOIN ===================' -ForegroundColor Green
+Write-Host '  On this PC:            localhost' -ForegroundColor Green
+foreach ($ip in $ips) {
+    Write-Host "  Friends on your Wi-Fi: $ip" -ForegroundColor Green
+}
+Write-Host '===================================================' -ForegroundColor Green

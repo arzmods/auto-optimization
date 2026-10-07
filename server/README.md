@@ -39,9 +39,8 @@ To remove a plugin, stop the server and delete its `.jar` from `plugins`.
 1. Open Minecraft **26.3** and click **Multiplayer**, then **Add Server**.
 2. Server Address:
    - On the same PC as the server: `localhost`
-   - Friends on the same Wi-Fi: your PC's local IP. To find it, press the Windows key,
-     type `cmd`, press Enter, type `ipconfig`, press Enter, and copy the **IPv4 Address**
-     (it looks like `192.168.1.23`).
+   - Friends on the same Wi-Fi: your PC's local IP (it looks like `192.168.1.23`).
+     `start.bat` shows it in green under **HOW TO JOIN** every time it starts.
 3. Click **Done**, then click the server to join.
 
 Friends who are **not** on your Wi-Fi need "port forwarding" (port `25565`) on your
