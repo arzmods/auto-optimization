@@ -1,0 +1,8 @@
+# Files the server creates when it runs - don't upload these
+*
+!.gitignore
+!start.bat
+!README.md
+!mods/
+mods/*
+!mods/.gitkeep
