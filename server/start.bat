@@ -1,70 +1,49 @@
 @echo off
 rem ============================================================
-rem  Fabric Minecraft server - double-click this file to start
+rem  Minecraft Fabric server - just double-click this file.
+rem  The first start downloads everything it needs by itself.
 rem ============================================================
 rem  Change these if you want a different version or more memory.
-set MC_VERSION=26.2
-set LOADER_VERSION=0.19.3
+set MC_VERSION=26.3
 set RAM=4G
 rem ============================================================
 
 cd /d "%~dp0"
 title Minecraft Fabric Server %MC_VERSION%
 
-rem --- Step 1: make sure Java is installed ---
-where java >nul 2>nul
+rem --- Step 1: download Java, Fabric and Fabric API if missing ---
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" -McVersion %MC_VERSION%
 if errorlevel 1 (
     echo.
-    echo [!] Java was not found on this PC.
-    echo     Minecraft %MC_VERSION% needs Java 25 or newer.
-    echo     Download it from https://adoptium.net/ , install it,
-    echo     then double-click start.bat again.
-    echo.
+    echo [!] Setup failed. Read the red message above.
+    echo     Most of the time it is the internet connection - just try again.
     pause
     exit /b 1
 )
 
-rem --- Step 2: download the Fabric server launcher (first run only) ---
-if not exist fabric-server-launch.jar (
-    echo Downloading the Fabric server launcher for Minecraft %MC_VERSION%...
-    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-      "$ErrorActionPreference='Stop';" ^
-      "$inst = (Invoke-RestMethod 'https://meta.fabricmc.net/v2/versions/installer' | Where-Object stable | Select-Object -First 1).version;" ^
-      "Invoke-WebRequest ('https://meta.fabricmc.net/v2/versions/loader/%MC_VERSION%/%LOADER_VERSION%/' + $inst + '/server/jar') -OutFile 'fabric-server-launch.jar'"
-    if errorlevel 1 (
-        echo.
-        echo [!] The download failed. Check your internet connection and try again.
-        if exist fabric-server-launch.jar del fabric-server-launch.jar
-        pause
-        exit /b 1
-    )
-)
-
-rem --- Step 3: accept the Minecraft EULA (first run only) ---
+rem --- Step 2: accept the Minecraft EULA - first start only ---
 findstr /c:"eula=true" eula.txt >nul 2>nul
-if errorlevel 1 (
-    echo.
-    echo To run a Minecraft server you must agree to the Minecraft EULA:
-    echo     https://aka.ms/MinecraftEULA
-    echo.
-    set /p AGREE=Type YES and press Enter if you agree:
-    call :checkagree
-    if errorlevel 1 exit /b 1
-)
+if errorlevel 1 call :askeula
+if errorlevel 1 exit /b 1
 
-rem --- Step 4: start the server ---
+rem --- Step 3: start the server ---
 echo.
 echo Starting the server with %RAM% of memory...
 echo Type "stop" in this window to shut it down safely.
 echo.
-java -Xms%RAM% -Xmx%RAM% -jar fabric-server-launch.jar nogui
+"%~dp0java\bin\java.exe" -Xms%RAM% -Xmx%RAM% -jar fabric-server-launch.jar nogui
 
 echo.
 echo The server has stopped.
 pause
 exit /b 0
 
-:checkagree
+:askeula
+echo.
+echo To run a Minecraft server you must agree to the Minecraft EULA:
+echo     https://aka.ms/MinecraftEULA
+echo.
+set /p AGREE=Type YES and press Enter if you agree: 
 if /i not "%AGREE%"=="YES" (
     echo You did not agree, so the server will not start.
     pause

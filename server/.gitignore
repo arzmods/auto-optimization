@@ -2,6 +2,8 @@
 *
 !.gitignore
 !start.bat
+!setup.ps1
+!server.properties
 !README.md
 !mods/
 mods/*
