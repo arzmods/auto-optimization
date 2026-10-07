@@ -1,6 +1,6 @@
 @echo off
 rem ============================================================
-rem  Minecraft Fabric server - just double-click this file.
+rem  Minecraft Paper server - just double-click this file.
 rem  The first start downloads everything it needs by itself.
 rem ============================================================
 rem  Change these if you want a different version or more memory.
@@ -9,9 +9,9 @@ set RAM=4G
 rem ============================================================
 
 cd /d "%~dp0"
-title Minecraft Fabric Server %MC_VERSION%
+title Minecraft Paper Server %MC_VERSION%
 
-rem --- Step 1: download Java, Fabric and Fabric API if missing ---
+rem --- Step 1: download Java and Paper if missing ---
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" -McVersion %MC_VERSION%
 if errorlevel 1 (
     echo.
@@ -31,7 +31,7 @@ echo.
 echo Starting the server with %RAM% of memory...
 echo Type "stop" in this window to shut it down safely.
 echo.
-"%~dp0java\bin\java.exe" -Xms%RAM% -Xmx%RAM% -jar fabric-server-launch.jar nogui
+"%~dp0java\bin\java.exe" -Xms%RAM% -Xmx%RAM% -jar paper.jar nogui
 
 echo.
 echo The server has stopped.

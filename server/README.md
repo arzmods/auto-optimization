@@ -1,11 +1,13 @@
-# Your Minecraft 26.3 Fabric server (Windows)
+# Your Minecraft 26.3 plugin server (Windows)
+
+This is a **Paper** server. Paper is a normal Minecraft server that can run plugins:
+you drop a plugin file into the `plugins` folder and it works.
 
 You only have to do **one thing**: double-click `start.bat`.
 The first time, it downloads everything by itself:
 
 - **Java 25** (a private copy inside this folder, so you don't install anything)
-- the **Fabric server** for Minecraft 26.3
-- the **Fabric API** mod, which most Fabric mods need
+- the **Paper server** for Minecraft 26.3
 
 ## Start the server
 
@@ -20,6 +22,18 @@ The first time, it downloads everything by itself:
 
 To stop it: type `stop` in the black window and press **Enter**.
 
+## Add a plugin
+
+1. Download a plugin `.jar` file. Good places: https://modrinth.com/plugins,
+   https://hangar.papermc.io and https://www.spigotmc.org/resources/.
+   Pick one that says it works with **Paper** (or Spigot/Bukkit) and Minecraft **26.3**.
+2. Stop the server (type `stop`).
+3. Drop the `.jar` file into the **`plugins`** folder.
+4. Double-click `start.bat` again. The plugin is now running.
+
+To check which plugins are loaded, type `plugins` in the black window.
+To remove a plugin, stop the server and delete its `.jar` from `plugins`.
+
 ## Join the server
 
 1. Open Minecraft **26.3** and click **Multiplayer**, then **Add Server**.
@@ -33,14 +47,9 @@ To stop it: type `stop` in the black window and press **Enter**.
 Friends who are **not** on your Wi-Fi need "port forwarding" (port `25565`) on your
 router, or a tool like playit.gg. Ask me if you want help with that.
 
-## Add mods
+## Make yourself admin
 
-1. Stop the server.
-2. Put the mod `.jar` files in the **`mods`** folder (pick the 26.3 Fabric version of each mod).
-3. Start the server again.
-
-Only server mods do anything here. "Client only" mods, like the Hardware Scaler
-mod in this project, go in each player's own game instead.
+In the black window, type `op YourMinecraftName` and press **Enter**.
 
 ## Change settings
 
@@ -49,14 +58,14 @@ mod in this project, go in each player's own game instead.
 - **Memory:** open `start.bat` with Notepad and change `set RAM=4G` (for example to `6G`).
   Don't use more than half of your PC's memory.
 - **Minecraft version:** change `set MC_VERSION=26.3` in `start.bat`.
-  The next start updates Fabric automatically.
+  The next start downloads the matching Paper automatically.
 
 ## Something went wrong?
 
 | Message | What to do |
 |---|---|
 | `Setup failed` | Usually the internet. Try again. |
-| `Fabric does not support Minecraft 26.3 yet` | Fabric isn't out for 26.3 yet. Wait, or set `MC_VERSION=26.2` in `start.bat`. |
-| The window closes right away | Right-click `start.bat`, choose **Edit**, and check that you didn't break a line. |
+| `Paper does not have Minecraft 26.3 yet` | Paper isn't out for 26.3 yet. Wait, or set `MC_VERSION=26.2` in `start.bat`. |
+| A plugin doesn't work | Make sure that plugin supports Minecraft 26.3, and look for red errors in the black window. |
 
 Still stuck? Copy the text from the black window and send it to me.

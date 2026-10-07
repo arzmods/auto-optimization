@@ -5,6 +5,6 @@
 !setup.ps1
 !server.properties
 !README.md
-!mods/
-mods/*
-!mods/.gitkeep
+!plugins/
+plugins/*
+!plugins/.gitkeep
