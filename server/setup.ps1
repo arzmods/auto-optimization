@@ -1,6 +1,6 @@
 # Installs everything the server needs. start.bat runs this for you.
 # It only downloads things that are missing, so later starts are quick.
-param([string]$McVersion = '26.3')
+param([string]$McVersion = '26.3', [string]$Playit = 'yes')
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'   # makes downloads much faster
@@ -37,9 +37,15 @@ if (-not (Test-Path 'paper.jar') -or $installed -ne $McVersion) {
 }
 
 New-Item 'plugins' -ItemType Directory -Force | Out-Null
+
+# --- 3. playit.gg program, so friends outside your Wi-Fi can join ---
+if ($Playit -eq 'yes' -and -not (Test-Path 'playit.exe')) {
+    Write-Host 'Downloading playit.gg (one time only)...'
+    Invoke-WebRequest 'https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-windows-x86_64-signed.exe' -OutFile 'playit.exe' -UserAgent $ua
+}
 Write-Host 'Everything is installed.'
 
-# --- 3. Show the addresses people can use to join ---
+# --- 4. Show the addresses people can use to join ---
 $ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
     Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
     Select-Object -ExpandProperty IPAddress
@@ -48,5 +54,9 @@ Write-Host '=================== HOW TO JOIN ===================' -ForegroundColo
 Write-Host '  On this PC:            localhost' -ForegroundColor Green
 foreach ($ip in $ips) {
     Write-Host "  Friends on your Wi-Fi: $ip" -ForegroundColor Green
+}
+if ($Playit -eq 'yes') {
+    Write-Host '  Friends anywhere:      your playit.gg address' -ForegroundColor Green
+    Write-Host '                         (see the playit window)' -ForegroundColor Green
 }
 Write-Host '===================================================' -ForegroundColor Green

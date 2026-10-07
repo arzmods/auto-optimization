@@ -8,6 +8,7 @@ The first time, it downloads everything by itself:
 
 - **Java 25** (a private copy inside this folder, so you don't install anything)
 - the **Paper server** for Minecraft 26.3
+- **playit.gg**, so friends outside your Wi-Fi can join
 
 ## Start the server
 
@@ -43,8 +44,21 @@ To remove a plugin, stop the server and delete its `.jar` from `plugins`.
      `start.bat` shows it in green under **HOW TO JOIN** every time it starts.
 3. Click **Done**, then click the server to join.
 
-Friends who are **not** on your Wi-Fi need "port forwarding" (port `25565`) on your
-router, or a tool like playit.gg. Ask me if you want help with that.
+## Let friends anywhere join (playit.gg)
+
+`start.bat` also opens a second window called **playit.gg**. It gives you an address
+anyone can use, without touching your router. The setup below is **only needed once**:
+
+1. In the playit window you'll see a link (it starts with `https://playit.gg/claim/...`).
+   Hold **Ctrl** and click it, or copy it into your browser.
+2. Make a free playit.gg account (or log in) and click to **add/approve** the agent.
+3. On the playit.gg website, click **Add Tunnel**, choose **Minecraft Java**, and
+   create it. (If it asks for a local port, use `25565`.)
+4. The website shows your address, something like `cool-name.joinmc.link`.
+   **Give that address to your friends.** It stays the same every time.
+
+Keep the playit window open while you play. To turn playit off, open `start.bat`
+with Notepad and change `set PLAYIT=yes` to `set PLAYIT=no`.
 
 ## Make yourself admin
 
