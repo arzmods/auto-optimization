@@ -6,15 +6,13 @@ rem ============================================================
 rem  Change these if you want a different version or more memory.
 set MC_VERSION=26.3
 set RAM=4G
-rem  playit.gg lets friends outside your Wi-Fi join. Set to no to turn it off.
-set PLAYIT=yes
 rem ============================================================
 
 cd /d "%~dp0"
 title Minecraft Paper Server %MC_VERSION%
 
 rem --- Step 1: download Java and Paper if missing ---
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" -McVersion %MC_VERSION% -Playit %PLAYIT%
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" -McVersion %MC_VERSION%
 if errorlevel 1 (
     echo.
     echo [!] Setup failed. Read the red message above.
@@ -28,13 +26,7 @@ findstr /c:"eula=true" eula.txt >nul 2>nul
 if errorlevel 1 call :askeula
 if errorlevel 1 exit /b 1
 
-rem --- Step 3: start playit.gg in its own window ---
-if /i "%PLAYIT%"=="yes" (
-    tasklist /fi "imagename eq playit.exe" | find /i "playit.exe" >nul
-    if errorlevel 1 start "playit.gg - keep this window open" "%~dp0playit.exe"
-)
-
-rem --- Step 4: start the server ---
+rem --- Step 3: start the server ---
 echo.
 echo Starting the server with %RAM% of memory...
 echo Type "stop" in this window to shut it down safely.
