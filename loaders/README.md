@@ -37,21 +37,19 @@ version for exactly this reason.
 Switch targets with:
 
 ```bash
-tools/set_version.sh 26.3      # or 1.21.8, 1.21.1, 1.20.1
-gradle build                   # jar lands in build/libs/
+tools/set_version.sh 26.3      # or 1.20.1
+./gradlew build                # jar lands in build/libs/
 ```
 
 That rewrites `gradle.properties` from `versions/<mc>.properties`, which carries the
 Minecraft version, Java level, Loom version and Fabric API version for that target.
-Shipping four versions means running it four times.
+Shipping both versions means running it twice.
 
 ### The targets
 
 | Minecraft | Java | Fabric | NeoForge | Forge |
 |---|---|---|---|---|
 | **26.3** | 25 | ✅ | ✅ | — |
-| **1.21.8** | 21 | ✅ | ✅ | — |
-| **1.21.1** | 21 | ✅ | ✅ | fading |
 | **1.20.1** | 17 | ✅ | **does not exist** | ✅ |
 
 Two things worth knowing before you spend effort:

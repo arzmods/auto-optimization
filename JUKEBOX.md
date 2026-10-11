@@ -17,7 +17,7 @@ No rebuilding, no resource packs, no restarts. Songs live on the server.
 
 | | |
 |---|---|
-| **Minecraft** | 26.3 · 1.21.8 · 1.21.1 · 1.20.1 |
+| **Minecraft** | 26.3 · 1.20.1 |
 | **Loader** | Fabric (built) · NeoForge / Forge (source in `loaders/`) |
 | **Required mod** | **Simple Voice Chat** — server *and* every client |
 
