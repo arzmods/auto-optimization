@@ -4,4 +4,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = "auto-optimization"
+rootProject.name = "soundboard"

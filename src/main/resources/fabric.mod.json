@@ -1,16 +1,15 @@
 {
   "schemaVersion": 1,
-  "id": "hardwarescaler",
+  "id": "soundboard",
   "version": "${version}",
-  "name": "Hardware Scaler",
-  "description": "Detects system hardware and applies tiered performance presets, plus a soundboard that plays songs into your Simple Voice Chat microphone (press J).",
+  "name": "Soundboard",
+  "description": "Play songs from your computer into Simple Voice Chat, so you and everyone near you hear them. Press J.",
   "authors": [
     "arzmods"
   ],
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.example.hardwarescaler.HardwareScalerClient",
       "com.example.soundboard.SoundboardClient"
     ],
     "voicechat": [

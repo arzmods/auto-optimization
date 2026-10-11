@@ -43,10 +43,6 @@ dependencies {
 
 	// compileOnly: Simple Voice Chat provides this at runtime, so it must not be bundled.
 	compileOnly "de.maxhenkel.voicechat:voicechat-api:${voicechat_api_version}"
-
-	include implementation("com.github.oshi:oshi-core:6.9.0")
-	include implementation("net.java.dev.jna:jna:5.17.0")
-	include implementation("net.java.dev.jna:jna-platform:5.17.0")
 }
 
 def javaTarget = Integer.parseInt(java_version)

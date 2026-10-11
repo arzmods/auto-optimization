@@ -1,2 +1,6 @@
-# auto-optimization
-@github please activate the cloud agent to look at my workspace files. Rename settings.gradle to settings.gradle.kts, add the maven.fabricmc.net repository, fix the fabric-loom plugin ID namespace inside build.gradle, and run a fresh test build.
+# Soundboard
+
+A Fabric mod that plays songs from your computer into Simple Voice Chat, so you and
+everyone near you hear them. Press **J** in game to open it.
+
+See [SOUNDBOARD.md](SOUNDBOARD.md) for how to install, use and build it.
