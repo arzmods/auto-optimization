@@ -10,10 +10,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -110,15 +108,4 @@ public final class SongLibrary {
         return new ArrayList<>(byCode.values());
     }
 
-    public synchronized List<SongEntry> search(String query) {
-        String needle = query.toLowerCase(Locale.ROOT);
-        List<SongEntry> hits = new ArrayList<>();
-        for (SongEntry entry : byCode.values()) {
-            if (entry.label().toLowerCase(Locale.ROOT).contains(needle)) {
-                hits.add(entry);
-            }
-        }
-        hits.sort(Comparator.comparingInt(a -> a.code));
-        return hits;
-    }
 }

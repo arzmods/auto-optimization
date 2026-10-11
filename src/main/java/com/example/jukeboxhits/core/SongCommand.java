@@ -24,16 +24,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * /song <code>              get a disc for that code
- * /song upload <url> <name> download a song and give it the next free code
- * /song play <name|code>    play where you are standing, no disc needed
- * /song disc <name|code>    get a disc for that song
- * /song import             add every audio file dropped into the songs folder
- * /song stop                stop everything you can hear
- * /song list [page]         browse codes
- * /song search <text>       find a code
- * /song remove <code>       delete a song
- * /song reload              re-read the config
+ * Everything is by number - no names to type or remember.
+ *
+ * /song upload <url>     download a song, get its number
+ * /song import           add every new audio file in the songs folder, each gets a number
+ * /song play <number>    play where you stand
+ * /song disc <number>    get a disc for a jukebox (/song <number> does the same)
+ * /song stop             stop everything
+ * /song list [page]      see every number
+ * /song remove <number>  delete a song
+ * /song reload           re-read the config
  *
  * Only vanilla and Brigadier types appear here, so this is identical on every loader.
  */
@@ -67,25 +67,21 @@ public final class SongCommand {
 
         root.then(Commands.literal("disc")
                 .requires(SongCommand::canGetDisc)
-                .then(Commands.argument("song", StringArgumentType.greedyString())
-                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(songNames(), builder))
-                        .executes(ctx -> withSong(ctx.getSource(), StringArgumentType.getString(ctx, "song"),
-                                code -> giveDisc(ctx.getSource(), code)))));
+                .then(Commands.argument("number", IntegerArgumentType.integer(1))
+                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(songNumbers(), builder))
+                        .executes(ctx -> giveDisc(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "number")))));
 
         root.then(Commands.literal("upload")
                 .requires(SongCommand::canUpload)
-                .then(Commands.argument("url", StringArgumentType.string())
-                        .then(Commands.argument("name", StringArgumentType.greedyString())
-                                .executes(ctx -> upload(ctx.getSource(),
-                                        StringArgumentType.getString(ctx, "url"),
-                                        StringArgumentType.getString(ctx, "name"))))));
+                .then(Commands.argument("url", StringArgumentType.greedyString())
+                        .executes(ctx -> upload(ctx.getSource(),
+                                StringArgumentType.getString(ctx, "url")))));
 
         root.then(Commands.literal("play")
                 .requires(SongCommand::canGetDisc)
-                .then(Commands.argument("song", StringArgumentType.greedyString())
-                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(songNames(), builder))
-                        .executes(ctx -> withSong(ctx.getSource(), StringArgumentType.getString(ctx, "song"),
-                                code -> playHere(ctx.getSource(), code)))));
+                .then(Commands.argument("number", IntegerArgumentType.integer(1))
+                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(songNumbers(), builder))
+                        .executes(ctx -> playHere(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "number")))));
 
         root.then(Commands.literal("import")
                 .requires(SongCommand::canUpload)
@@ -99,9 +95,6 @@ public final class SongCommand {
                 .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> list(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "page")))));
 
-        root.then(Commands.literal("search")
-                .then(Commands.argument("text", StringArgumentType.greedyString())
-                        .executes(ctx -> search(ctx.getSource(), StringArgumentType.getString(ctx, "text")))));
 
         root.then(Commands.literal("remove")
                 .requires(SongCommand::canUpload)
@@ -115,18 +108,12 @@ public final class SongCommand {
         dispatcher.register(root);
     }
 
-    private static int upload(CommandSourceStack source, String url, String name) {
+    private static int upload(CommandSourceStack source, String url) {
         SongLibrary library = JukeboxCore.library();
         if (library.size() >= JukeboxCore.config().maxSongs) {
             source.sendFailure(Component.literal(
                     "The library is full (" + JukeboxCore.config().maxSongs
                             + " songs). Remove one first."));
-            return 0;
-        }
-
-        if (SongMatcher.isNameTaken(library.all(), name)) {
-            source.sendFailure(Component.literal(
-                    "A song called \"" + name + "\" already exists. Pick another name."));
             return 0;
         }
 
@@ -177,12 +164,12 @@ public final class SongCommand {
                 uploader = player.getStringUUID();
             }
 
-            SongEntry entry = new SongEntry(code, name, "", fileName, seconds, uploader);
+            SongEntry entry = new SongEntry(code, fileHint(url), "", fileName, seconds, uploader);
             JukeboxCore.library().put(entry);
 
             source.sendSuccess(() -> Component.literal(
-                    "Added as code " + code + ": " + entry.label()
-                            + " (" + entry.durationText() + "). Try /song " + code), true);
+                    "Added as song " + code + " (" + entry.durationText() + "). Play it with /song play "
+                            + code), true);
         });
         return 1;
     }
@@ -191,7 +178,7 @@ public final class SongCommand {
         SongEntry entry = JukeboxCore.library().byCode(code);
         if (entry == null) {
             source.sendFailure(Component.literal(
-                    "No song on code " + code + ". Use /song list."));
+                    "There is no song " + code + ". Use /song list."));
             return 0;
         }
 
@@ -202,7 +189,7 @@ public final class SongCommand {
         }
 
         MinecraftServer server = source.getServer();
-        String discName = DiscTag.encode(code, entry.label());
+        String discName = DiscTag.encode(code, null);
         String command = JukeboxCore.config().giveCommand
                 .replace("%player%", player.getStringUUID())
                 .replace("%disc%", JukeboxCore.config().discItem)
@@ -219,14 +206,14 @@ public final class SongCommand {
         }
 
         source.sendSuccess(() -> Component.literal(
-                "#" + code + "  " + entry.label() + "  - put it in a jukebox"), false);
+                "Song " + code + "  - put it in a jukebox"), false);
         return 1;
     }
 
     private static int playHere(CommandSourceStack source, int code) {
         SongEntry entry = JukeboxCore.library().byCode(code);
         if (entry == null) {
-            source.sendFailure(Component.literal("No song on code " + code + "."));
+            source.sendFailure(Component.literal("There is no song " + code + "."));
             return 0;
         }
         ServerPlayer player = source.getPlayer();
@@ -244,7 +231,7 @@ public final class SongCommand {
                 pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                 message -> source.sendFailure(Component.literal(message)));
 
-        source.sendSuccess(() -> Component.literal("Playing #" + code + "  " + entry.label()), false);
+        source.sendSuccess(() -> Component.literal("Playing song " + code), false);
         return 1;
     }
 
@@ -259,7 +246,7 @@ public final class SongCommand {
         List<SongEntry> songs = JukeboxCore.library().all();
         if (songs.isEmpty()) {
             source.sendSuccess(() -> Component.literal(
-                    "No songs yet. Add one with /song upload <url> <name>"), false);
+                    "No songs yet. Add one with /song import or /song upload <url>"), false);
             return 0;
         }
 
@@ -274,29 +261,16 @@ public final class SongCommand {
         for (int i = start; i < end; i++) {
             SongEntry entry = songs.get(i);
             source.sendSuccess(() -> Component.literal(
-                    "  " + entry.code + "  " + entry.label() + "  " + entry.durationText()), false);
+                    "  " + entry.code + "   " + entry.durationText() + "   " + entry.title), false);
         }
         return songs.size();
     }
 
-    private static int search(CommandSourceStack source, String text) {
-        List<SongEntry> hits = JukeboxCore.library().search(text);
-        if (hits.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("Nothing matched \"" + text + "\"."), false);
-            return 0;
-        }
-        source.sendSuccess(() -> Component.literal(hits.size() + " match(es):"), false);
-        for (SongEntry entry : hits) {
-            source.sendSuccess(() -> Component.literal(
-                    "  " + entry.code + "  " + entry.label()), false);
-        }
-        return hits.size();
-    }
 
     private static int remove(CommandSourceStack source, int code) {
         SongEntry removed = JukeboxCore.library().remove(code);
         if (removed == null) {
-            source.sendFailure(Component.literal("No song on code " + code + "."));
+            source.sendFailure(Component.literal("There is no song " + code + "."));
             return 0;
         }
         try {
@@ -304,7 +278,7 @@ public final class SongCommand {
         } catch (Exception e) {
             JukeboxCore.LOGGER.warn("Removed song {} but could not delete {}", code, removed.file, e);
         }
-        source.sendSuccess(() -> Component.literal("Removed #" + code + "  " + removed.label()), true);
+        source.sendSuccess(() -> Component.literal("Removed song " + code), true);
         return 1;
     }
 
@@ -315,41 +289,24 @@ public final class SongCommand {
         return 1;
     }
 
-    /** Every song name, for tab completion. */
-    private static List<String> songNames() {
-        List<String> names = new ArrayList<>();
+    /** Every number in use, for tab completion. */
+    private static List<String> songNumbers() {
+        List<String> numbers = new ArrayList<>();
         for (SongEntry entry : JukeboxCore.library().all()) {
-            if (entry.title != null && !entry.title.isBlank()) {
-                names.add(entry.title);
-            }
+            numbers.add(String.valueOf(entry.code));
         }
-        return names;
+        return numbers;
     }
 
-    /** Resolves a typed name or code to a song, or explains to the player why it could not. */
-    private static int withSong(CommandSourceStack source, String typed,
-                                java.util.function.IntUnaryOperator action) {
-        SongMatcher.Match match = SongMatcher.find(JukeboxCore.library().all(), typed);
-        if (match.found()) {
-            return action.applyAsInt(match.song().code);
+    /** The original file name, kept only so /song list can remind you which number is which. */
+    private static String fileHint(String urlOrFile) {
+        String path = urlOrFile;
+        int query = path.indexOf('?');
+        if (query >= 0) {
+            path = path.substring(0, query);
         }
-        if (match.ambiguous()) {
-            StringBuilder names = new StringBuilder();
-            int shown = 0;
-            for (SongEntry entry : match.candidates()) {
-                if (shown++ == 5) {
-                    names.append(", ...");
-                    break;
-                }
-                names.append(shown == 1 ? "" : ", ").append(entry.title);
-            }
-            source.sendFailure(Component.literal(
-                    "\"" + typed + "\" matches more than one song: " + names + ". Be more specific."));
-            return 0;
-        }
-        source.sendFailure(Component.literal(
-                "No song called \"" + typed + "\". Use /song list to see them all."));
-        return 0;
+        int slash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        return slash >= 0 ? path.substring(slash + 1) : path;
     }
 
     /**
@@ -395,10 +352,6 @@ public final class SongCommand {
                     break;
                 }
                 String fileName = file.getFileName().toString();
-                String name = SongMatcher.nameFromFile(fileName);
-                if (SongMatcher.isNameTaken(JukeboxCore.library().all(), name)) {
-                    name = name + " " + JukeboxCore.library().nextFreeCode();
-                }
 
                 double seconds;
                 try {
@@ -410,16 +363,16 @@ public final class SongCommand {
                 }
 
                 int code = JukeboxCore.library().nextFreeCode();
-                SongEntry entry = new SongEntry(code, name, "", fileName, seconds, "");
+                SongEntry entry = new SongEntry(code, fileName, "", fileName, seconds, "");
                 JukeboxCore.library().put(entry);
                 added++;
                 source.sendSuccess(() -> Component.literal(
-                        "  " + code + "  " + entry.title + "  (" + entry.durationText() + ")"), false);
+                        "  " + code + "  " + fileName + "  (" + entry.durationText() + ")"), false);
             }
 
             int total = added;
             source.sendSuccess(() -> Component.literal(
-                    "Imported " + total + " song(s). Play one with /song play <name>"), true);
+                    "Imported " + total + " song(s). Play one with /song play <number>"), true);
         });
         return 1;
     }

@@ -1,16 +1,14 @@
-# Jukebox Hits — upload a song, name it, play it
+# Jukebox Hits — every song is just a number
 
 ```
-put midnight_drive.mp3 in the songs folder
-/song import                 -> Imported: 1  midnight drive
+put a song file in the songs folder
+/song import          -> Imported: 1
 
-/song play midnight drive    -> it plays right where you stand
-/song disc midnight drive    -> or get a disc and put it in a jukebox
+/song play 1          -> it plays right where you stand
+/song disc 1          -> or get a disc and put it in a jukebox
 ```
 
-Type the name, or just the start of it — `/song play midn` works, and Tab completes it.
-Every song also gets a short number, so `/song play 1` works too.
-
+No names to type or remember. Press **Tab** after `/song play` to see which numbers exist.
 No rebuilding, no resource packs, no restarts. Songs live on the server.
 
 ---
@@ -53,45 +51,39 @@ around it.
    `.minecraft/config/jukeboxhits/songs/`
    On a server, it's `config/jukeboxhits/songs/` in the server's folder.
 2. Copy your `.mp3` or `.wav` files into it.
-3. In game, run `/song import`.
-
-Each file gets named after its file name: `midnight_drive.mp3` becomes **midnight drive**.
+3. In game, run `/song import`. Each new file gets the next free number.
 
 ### Add a song — from a link
 
 ```
-/song upload <direct-url> <name>
+/song upload <direct-url>
 ```
 
 The URL has to be a **direct link to the file**, ending in `.mp3` or `.wav` — not a
 YouTube or Spotify page. Redirects are rejected on purpose, so cloud-drive "share" links
 usually won't work; use the direct-download link.
 
-Two songs can't share a name — you'll be asked to pick another.
-
 ### Play it
 
 ```
-/song play <name>   play where you stand, no disc needed
-/song disc <name>   get a disc, then put it in a jukebox
-/song 1             same as /song disc, by number
-/song stop          stop everything
+/song play 1    play where you stand, no disc needed
+/song disc 1    get a disc, then put it in a jukebox
+/song 1         same as /song disc 1
+/song stop      stop everything
 ```
-
-If a name matches more than one song (say `sun` for *Sunrise* and *Sunset*), it tells you
-which ones so you can be more specific.
 
 Right-click the jukebox with an empty hand to stop it.
 
 ### Browse
 
 ```
-/song list        every code
+/song list        every number, with its length and original file name
 /song list 2      page 2
-/song search mid  find a code by name
 /song remove 1    delete a song and its file
 /song reload      re-read the config
 ```
+
+Numbers are reused: remove song 3 and the next song you add becomes 3.
 
 ## Settings
 
@@ -122,13 +114,13 @@ Songs live in `config/jukeboxhits/songs/`, and the code table is `songs.json` ne
 ## How the pieces fit
 
 ```
-/song upload  ->  AudioStore downloads the file
+/song upload or import  ->  the file is stored
                        |
                   AudioLoader decodes it   (MP3 via Simple Voice Chat, WAV via the JDK)
                        |
                   Pcm converts to 48kHz mono, 20ms frames
                        |
-/song 1       ->  disc named "♪#1 Midnight Drive"
+/song 1       ->  disc named "♪#1"
                        |
 right-click a jukebox  ->  PlaybackManager opens a positional audio channel there
 ```

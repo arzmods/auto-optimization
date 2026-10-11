@@ -17,19 +17,15 @@ javac -d "$OUT" \
     "$ROOT/src/main/java/com/example/jukeboxhits/core/audio/Pcm.java" \
     "$ROOT/src/main/java/com/example/jukeboxhits/core/audio/AudioDecoder.java" \
     "$ROOT/src/main/java/com/example/jukeboxhits/core/DiscTag.java" \
-    "$ROOT/src/main/java/com/example/jukeboxhits/core/SongEntry.java" \
-    "$ROOT/src/main/java/com/example/jukeboxhits/core/SongMatcher.java" \
     "$ROOT/src/test/java/com/example/jukeboxhits/core/audio/PcmTest.java" \
     "$ROOT/src/test/java/com/example/jukeboxhits/core/audio/AudioDecoderTest.java" \
-    "$ROOT/src/test/java/com/example/jukeboxhits/core/DiscTagTest.java" \
-    "$ROOT/src/test/java/com/example/jukeboxhits/core/SongMatcherTest.java"
+    "$ROOT/src/test/java/com/example/jukeboxhits/core/DiscTagTest.java"
 
 failed=0
 for test in \
     com.example.jukeboxhits.core.audio.PcmTest \
     com.example.jukeboxhits.core.audio.AudioDecoderTest \
-    com.example.jukeboxhits.core.DiscTagTest \
-    com.example.jukeboxhits.core.SongMatcherTest
+    com.example.jukeboxhits.core.DiscTagTest
 do
     echo
     echo "=== $test ==="

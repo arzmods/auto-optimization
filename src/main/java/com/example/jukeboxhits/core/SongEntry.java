@@ -27,11 +27,9 @@ public class SongEntry {
         this.uploadedAt = System.currentTimeMillis();
     }
 
+    /** Songs are identified by number only; this is what discs and messages show. */
     public String label() {
-        if (artist == null || artist.isBlank()) {
-            return title == null || title.isBlank() ? "untitled" : title;
-        }
-        return artist + " - " + title;
+        return "Song " + code;
     }
 
     public String durationText() {
