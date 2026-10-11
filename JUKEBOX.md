@@ -1,15 +1,17 @@
-# Jukebox Hits — upload songs, get a code, play it on a jukebox
+# Jukebox Hits — upload a song, name it, play it
 
 ```
-/song upload https://example.com/track.mp3 Midnight Drive
-  -> Added as code 1
+put midnight_drive.mp3 in the songs folder
+/song import                 -> Imported: 1  midnight drive
 
-/song 1          -> you get a disc
-put it in a jukebox -> it plays, for everyone nearby, in 3D
+/song play midnight drive    -> it plays right where you stand
+/song disc midnight drive    -> or get a disc and put it in a jukebox
 ```
 
-Short numeric codes, like Roblox. No rebuilding, no resource packs, no restarts.
-Songs are uploaded once and live on the server.
+Type the name, or just the start of it — `/song play midn` works, and Tab completes it.
+Every song also gets a short number, so `/song play 1` works too.
+
+No rebuilding, no resource packs, no restarts. Songs live on the server.
 
 ---
 
@@ -45,25 +47,39 @@ around it.
 
 ## Using it
 
-### Add a song
+### Add a song — from a file
+
+1. Find the songs folder. Playing on your own (singleplayer), it's on your computer:
+   `.minecraft/config/jukeboxhits/songs/`
+   On a server, it's `config/jukeboxhits/songs/` in the server's folder.
+2. Copy your `.mp3` or `.wav` files into it.
+3. In game, run `/song import`.
+
+Each file gets named after its file name: `midnight_drive.mp3` becomes **midnight drive**.
+
+### Add a song — from a link
 
 ```
 /song upload <direct-url> <name>
 ```
 
 The URL has to be a **direct link to the file**, ending in `.mp3` or `.wav` — not a
-YouTube or Spotify page. The server downloads it, decodes it, and tells you its code.
+YouTube or Spotify page. Redirects are rejected on purpose, so cloud-drive "share" links
+usually won't work; use the direct-download link.
 
-Redirects are rejected on purpose, so "share links" from cloud drives usually won't work;
-use the direct-download form of the link.
+Two songs can't share a name — you'll be asked to pick another.
 
 ### Play it
 
 ```
-/song 1           get a disc for code 1, then put it in a jukebox
-/song play 1      play where you stand, no disc needed
-/song stop        stop everything
+/song play <name>   play where you stand, no disc needed
+/song disc <name>   get a disc, then put it in a jukebox
+/song 1             same as /song disc, by number
+/song stop          stop everything
 ```
+
+If a name matches more than one song (say `sun` for *Sunrise* and *Sunset*), it tells you
+which ones so you can be more specific.
 
 Right-click the jukebox with an empty hand to stop it.
 

@@ -9,6 +9,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -16,14 +17,18 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * /song <code>              get a disc for that code
  * /song upload <url> <name> download a song and give it the next free code
- * /song play <code>         play where you are standing, no disc needed
+ * /song play <name|code>    play where you are standing, no disc needed
+ * /song disc <name|code>    get a disc for that song
+ * /song import             add every audio file dropped into the songs folder
  * /song stop                stop everything you can hear
  * /song list [page]         browse codes
  * /song search <text>       find a code
@@ -62,8 +67,10 @@ public final class SongCommand {
 
         root.then(Commands.literal("disc")
                 .requires(SongCommand::canGetDisc)
-                .then(Commands.argument("code", IntegerArgumentType.integer(1))
-                        .executes(ctx -> giveDisc(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "code")))));
+                .then(Commands.argument("song", StringArgumentType.greedyString())
+                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(songNames(), builder))
+                        .executes(ctx -> withSong(ctx.getSource(), StringArgumentType.getString(ctx, "song"),
+                                code -> giveDisc(ctx.getSource(), code)))));
 
         root.then(Commands.literal("upload")
                 .requires(SongCommand::canUpload)
@@ -75,8 +82,14 @@ public final class SongCommand {
 
         root.then(Commands.literal("play")
                 .requires(SongCommand::canGetDisc)
-                .then(Commands.argument("code", IntegerArgumentType.integer(1))
-                        .executes(ctx -> playHere(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "code")))));
+                .then(Commands.argument("song", StringArgumentType.greedyString())
+                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(songNames(), builder))
+                        .executes(ctx -> withSong(ctx.getSource(), StringArgumentType.getString(ctx, "song"),
+                                code -> playHere(ctx.getSource(), code)))));
+
+        root.then(Commands.literal("import")
+                .requires(SongCommand::canUpload)
+                .executes(ctx -> importFolder(ctx.getSource())));
 
         root.then(Commands.literal("stop")
                 .executes(ctx -> stopAll(ctx.getSource())));
@@ -108,6 +121,12 @@ public final class SongCommand {
             source.sendFailure(Component.literal(
                     "The library is full (" + JukeboxCore.config().maxSongs
                             + " songs). Remove one first."));
+            return 0;
+        }
+
+        if (SongMatcher.isNameTaken(library.all(), name)) {
+            source.sendFailure(Component.literal(
+                    "A song called \"" + name + "\" already exists. Pick another name."));
             return 0;
         }
 
@@ -293,6 +312,115 @@ public final class SongCommand {
         JukeboxCore.reload();
         source.sendSuccess(() -> Component.literal(
                 "Reloaded. " + JukeboxCore.library().size() + " song(s)."), true);
+        return 1;
+    }
+
+    /** Every song name, for tab completion. */
+    private static List<String> songNames() {
+        List<String> names = new ArrayList<>();
+        for (SongEntry entry : JukeboxCore.library().all()) {
+            if (entry.title != null && !entry.title.isBlank()) {
+                names.add(entry.title);
+            }
+        }
+        return names;
+    }
+
+    /** Resolves a typed name or code to a song, or explains to the player why it could not. */
+    private static int withSong(CommandSourceStack source, String typed,
+                                java.util.function.IntUnaryOperator action) {
+        SongMatcher.Match match = SongMatcher.find(JukeboxCore.library().all(), typed);
+        if (match.found()) {
+            return action.applyAsInt(match.song().code);
+        }
+        if (match.ambiguous()) {
+            StringBuilder names = new StringBuilder();
+            int shown = 0;
+            for (SongEntry entry : match.candidates()) {
+                if (shown++ == 5) {
+                    names.append(", ...");
+                    break;
+                }
+                names.append(shown == 1 ? "" : ", ").append(entry.title);
+            }
+            source.sendFailure(Component.literal(
+                    "\"" + typed + "\" matches more than one song: " + names + ". Be more specific."));
+            return 0;
+        }
+        source.sendFailure(Component.literal(
+                "No song called \"" + typed + "\". Use /song list to see them all."));
+        return 0;
+    }
+
+    /**
+     * Adds every audio file sitting in the songs folder that is not in the library yet,
+     * named after its file. This is how a file on your own computer becomes a song:
+     * copy it into the folder, run /song import.
+     */
+    private static int importFolder(CommandSourceStack source) {
+        Path folder = JukeboxCore.store().directory();
+        source.sendSuccess(() -> Component.literal("Looking in " + folder + " ..."), false);
+
+        UPLOADS.submit(() -> {
+            List<String> known = new ArrayList<>();
+            for (SongEntry entry : JukeboxCore.library().all()) {
+                known.add(entry.file);
+            }
+
+            List<Path> fresh = new ArrayList<>();
+            try {
+                Files.createDirectories(folder);
+                try (Stream<Path> files = Files.list(folder)) {
+                    files.filter(Files::isRegularFile)
+                            .filter(f -> AudioLoader.isSupported(f.getFileName().toString()))
+                            .filter(f -> !known.contains(f.getFileName().toString()))
+                            .sorted()
+                            .forEach(fresh::add);
+                }
+            } catch (Exception e) {
+                source.sendFailure(Component.literal("Could not read the songs folder: " + e.getMessage()));
+                return;
+            }
+
+            if (fresh.isEmpty()) {
+                source.sendSuccess(() -> Component.literal(
+                        "No new songs found. Put .mp3 or .wav files in " + folder + " first."), false);
+                return;
+            }
+
+            int added = 0;
+            for (Path file : fresh) {
+                if (JukeboxCore.library().size() >= JukeboxCore.config().maxSongs) {
+                    source.sendFailure(Component.literal("Library is full; stopped importing."));
+                    break;
+                }
+                String fileName = file.getFileName().toString();
+                String name = SongMatcher.nameFromFile(fileName);
+                if (SongMatcher.isNameTaken(JukeboxCore.library().all(), name)) {
+                    name = name + " " + JukeboxCore.library().nextFreeCode();
+                }
+
+                double seconds;
+                try {
+                    seconds = com.example.jukeboxhits.core.audio.Pcm.durationSeconds(AudioLoader.load(file));
+                } catch (Exception e) {
+                    String why = e.getMessage();
+                    source.sendFailure(Component.literal("Skipped " + fileName + ": " + why));
+                    continue;
+                }
+
+                int code = JukeboxCore.library().nextFreeCode();
+                SongEntry entry = new SongEntry(code, name, "", fileName, seconds, "");
+                JukeboxCore.library().put(entry);
+                added++;
+                source.sendSuccess(() -> Component.literal(
+                        "  " + code + "  " + entry.title + "  (" + entry.durationText() + ")"), false);
+            }
+
+            int total = added;
+            source.sendSuccess(() -> Component.literal(
+                    "Imported " + total + " song(s). Play one with /song play <name>"), true);
+        });
         return 1;
     }
 
