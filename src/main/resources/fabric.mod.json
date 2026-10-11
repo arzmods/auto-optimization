@@ -3,20 +3,18 @@
   "id": "hardwarescaler",
   "version": "${version}",
   "name": "Hardware Scaler",
-  "description": "Detects system hardware and applies tiered performance presets, plus an upload-based jukebox with short song codes (/song <code>).",
+  "description": "Detects system hardware and applies tiered performance presets, plus a soundboard that plays songs into your Simple Voice Chat microphone (press J).",
   "authors": [
     "arzmods"
   ],
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "client": [
-      "com.example.hardwarescaler.HardwareScalerClient"
-    ],
-    "main": [
-      "com.example.jukeboxhits.fabric.JukeboxFabric"
+      "com.example.hardwarescaler.HardwareScalerClient",
+      "com.example.soundboard.SoundboardClient"
     ],
     "voicechat": [
-      "com.example.jukeboxhits.core.play.JukeboxVoicechatPlugin"
+      "com.example.soundboard.SoundboardPlugin"
     ]
   },
   "depends": {

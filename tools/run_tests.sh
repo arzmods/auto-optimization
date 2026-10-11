@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Compiles and runs the standalone tests.
 #
-# These cover the pure-Java parts (audio conversion, disc tagging) and need no Minecraft,
+# These cover the pure-Java parts (audio conversion) and need no Minecraft,
 # no Gradle and no network - so they run anywhere a JDK is installed:
 #
 #     tools/run_tests.sh
@@ -14,18 +14,15 @@ trap 'rm -rf "$OUT"' EXIT
 
 echo "compiling..."
 javac -d "$OUT" \
-    "$ROOT/src/main/java/com/example/jukeboxhits/core/audio/Pcm.java" \
-    "$ROOT/src/main/java/com/example/jukeboxhits/core/audio/AudioDecoder.java" \
-    "$ROOT/src/main/java/com/example/jukeboxhits/core/DiscTag.java" \
-    "$ROOT/src/test/java/com/example/jukeboxhits/core/audio/PcmTest.java" \
-    "$ROOT/src/test/java/com/example/jukeboxhits/core/audio/AudioDecoderTest.java" \
-    "$ROOT/src/test/java/com/example/jukeboxhits/core/DiscTagTest.java"
+    "$ROOT/src/main/java/com/example/soundboard/audio/Pcm.java" \
+    "$ROOT/src/main/java/com/example/soundboard/audio/AudioDecoder.java" \
+    "$ROOT/src/test/java/com/example/soundboard/audio/PcmTest.java" \
+    "$ROOT/src/test/java/com/example/soundboard/audio/AudioDecoderTest.java"
 
 failed=0
 for test in \
-    com.example.jukeboxhits.core.audio.PcmTest \
-    com.example.jukeboxhits.core.audio.AudioDecoderTest \
-    com.example.jukeboxhits.core.DiscTagTest
+    com.example.soundboard.audio.PcmTest \
+    com.example.soundboard.audio.AudioDecoderTest
 do
     echo
     echo "=== $test ==="

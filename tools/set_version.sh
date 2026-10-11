@@ -5,7 +5,7 @@
 #     tools/set_version.sh 1.20.1
 #
 # Then build as usual. One jar per Minecraft version - that is how Minecraft modding
-# works, so shipping four versions means running this four times.
+# works, so shipping both versions means running this twice.
 
 set -euo pipefail
 
@@ -41,7 +41,7 @@ SHARED="$(sed -n '/^# Shared across every target/,$p' "$ROOT/gradle.properties")
 } > "$ROOT/gradle.properties"
 
 echo "Now targeting Minecraft $TARGET:"
-grep -E "^(minecraft_version|java_version|fabric_api_version|neoforge_version|forge_version)=" \
+grep -E "^(minecraft_version|java_version|fabric_api_version)=" \
     "$ROOT/gradle.properties" | sed 's/^/  /'
 echo
 echo "Build with:  ./gradlew build      (output in build/libs/)"
