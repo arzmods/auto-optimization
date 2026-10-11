@@ -51,11 +51,11 @@ public final class SongCommand {
     }
 
     private static boolean canUpload(CommandSourceStack source) {
-        return JukeboxCore.config().allowAllPlayersUpload || source.hasPermission(2);
+        return JukeboxCore.config().allowAllPlayersUpload || McCompat.isGamemaster(source);
     }
 
     private static boolean canGetDisc(CommandSourceStack source) {
-        return JukeboxCore.config().allowAllPlayersDisc || source.hasPermission(2);
+        return JukeboxCore.config().allowAllPlayersDisc || McCompat.isGamemaster(source);
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -102,7 +102,7 @@ public final class SongCommand {
                         .executes(ctx -> remove(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "code")))));
 
         root.then(Commands.literal("reload")
-                .requires(source -> source.hasPermission(2))
+                .requires(McCompat::isGamemaster)
                 .executes(ctx -> reload(ctx.getSource())));
 
         dispatcher.register(root);
@@ -193,7 +193,7 @@ public final class SongCommand {
         String command = JukeboxCore.config().giveCommand
                 .replace("%player%", player.getStringUUID())
                 .replace("%disc%", JukeboxCore.config().discItem)
-                .replace("%name%", "'" + jsonString(discName) + "'");
+                .replace("%name%", nameArgument(discName));
 
         try {
             server.getCommands().performPrefixedCommand(
@@ -224,7 +224,7 @@ public final class SongCommand {
 
         BlockPos pos = player.blockPosition();
         String key = PlaybackManager.keyFor(
-                player.level().dimension().location().toString(),
+                McCompat.dimensionId(player.level()),
                 pos.getX(), pos.getY(), pos.getZ());
 
         PlaybackManager.start(key, entry, player.level(),
@@ -375,6 +375,14 @@ public final class SongCommand {
                     "Imported " + total + " song(s). Play one with /song play <number>"), true);
         });
         return 1;
+    }
+
+    /**
+     * The disc name as the give command expects it. From 1.21.5 a quoted string is already
+     * a text component; before that the name is JSON wrapped in an SNBT string.
+     */
+    static String nameArgument(String name) {
+        return BuildInfo.SNBT_TEXT_COMPONENTS ? jsonString(name) : "'" + jsonString(name) + "'";
     }
 
     /** Minimal JSON string escaping for the name passed through the give command. */

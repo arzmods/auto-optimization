@@ -40,10 +40,12 @@ public class JukeboxConfig {
      * substituted, and vanilla parses the result - so if item-component syntax changes in
      * a future Minecraft version this is a config edit rather than a recompile.
      *
-     * Older syntax, if your version rejects the default:
-     *   give %player% %disc%{display:{Name:%name%}}
+     * The default matches the Minecraft version this jar was built for: item components
+     * from 1.20.5, NBT before that.
      */
-    public String giveCommand = "give %player% %disc%[minecraft:custom_name=%name%]";
+    public String giveCommand = BuildInfo.ITEM_COMPONENTS
+            ? "give %player% %disc%[minecraft:custom_name=%name%]"
+            : "give %player% %disc%{display:{Name:%name%}}";
 
     public static JukeboxConfig load(Path file) {
         if (Files.exists(file)) {

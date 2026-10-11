@@ -44,4 +44,4 @@ echo "Now targeting Minecraft $TARGET:"
 grep -E "^(minecraft_version|java_version|fabric_api_version|neoforge_version|forge_version)=" \
     "$ROOT/gradle.properties" | sed 's/^/  /'
 echo
-echo "Build with:  gradle build        (output in build/libs/)"
+echo "Build with:  ./gradlew build      (output in build/libs/)"

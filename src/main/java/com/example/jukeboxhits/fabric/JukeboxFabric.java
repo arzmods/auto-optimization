@@ -2,6 +2,7 @@ package com.example.jukeboxhits.fabric;
 
 import com.example.jukeboxhits.core.DiscTag;
 import com.example.jukeboxhits.core.JukeboxCore;
+import com.example.jukeboxhits.core.McCompat;
 import com.example.jukeboxhits.core.SongCommand;
 import com.example.jukeboxhits.core.SongEntry;
 import com.example.jukeboxhits.core.play.PlaybackManager;
@@ -36,7 +37,7 @@ public class JukeboxFabric implements ModInitializer {
             }
 
             String key = PlaybackManager.keyFor(
-                    level.dimension().location().toString(), pos.getX(), pos.getY(), pos.getZ());
+                    McCompat.dimensionId(level), pos.getX(), pos.getY(), pos.getZ());
 
             ItemStack held = player.getItemInHand(hand);
             int code = held.isEmpty() ? -1 : DiscTag.decode(held.getHoverName().getString());
@@ -45,7 +46,7 @@ public class JukeboxFabric implements ModInitializer {
             // handling every jukebox this mod is not currently playing.
             if (code < 0) {
                 if (PlaybackManager.isPlaying(key) && PlaybackManager.stop(key)) {
-                    player.displayClientMessage(Component.literal("Stopped."), true);
+                    McCompat.tell(player, Component.literal("Stopped."), true);
                     return InteractionResult.SUCCESS;
                 }
                 return InteractionResult.PASS;
@@ -53,17 +54,16 @@ public class JukeboxFabric implements ModInitializer {
 
             SongEntry entry = JukeboxCore.library().byCode(code);
             if (entry == null) {
-                player.displayClientMessage(
+                McCompat.tell(player,
                         Component.literal("Code " + code + " is not in the library any more."), true);
                 return InteractionResult.SUCCESS;
             }
 
             PlaybackManager.start(key, entry, level,
                     pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    message -> player.displayClientMessage(Component.literal(message), false));
+                    message -> McCompat.tell(player, Component.literal(message), false));
 
-            player.displayClientMessage(
-                    Component.literal("♪ " + entry.label()), true);
+            McCompat.tell(player, Component.literal("♪ " + entry.label()), true);
             return InteractionResult.SUCCESS;
         });
     }
