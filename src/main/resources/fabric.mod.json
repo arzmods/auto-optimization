@@ -24,6 +24,7 @@
     "fabric-api": "*",
     "minecraft": "*",
     "java": ">=${java_version}",
-    "voicechat": ">=2.5.0"
+    "voicechat": "*",
+    "voicechat_api": ">=2.5.0"
   }
 }
