@@ -1,12 +1,17 @@
 package com.example.soundboard;
 
+import de.maxhenkel.voicechat.api.ForgeVoicechatPlugin;
 import de.maxhenkel.voicechat.api.VoicechatApi;
 import de.maxhenkel.voicechat.api.VoicechatPlugin;
 import de.maxhenkel.voicechat.api.events.ClientVoicechatConnectionEvent;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
 import de.maxhenkel.voicechat.api.events.MergeClientSoundEvent;
 
-/** Hooks the soundboard into Simple Voice Chat's microphone. */
+/**
+ * Hooks the soundboard into Simple Voice Chat's microphone. Fabric finds this through the
+ * "voicechat" entrypoint in fabric.mod.json; NeoForge finds it through the annotation.
+ */
+@ForgeVoicechatPlugin
 public class SoundboardPlugin implements VoicechatPlugin {
 
     @Override

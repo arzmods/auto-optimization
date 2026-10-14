@@ -4,14 +4,14 @@ Play songs from your own computer into Simple Voice Chat. You hear them, and so 
 everyone near you who hears your voice.
 
 This is a **client-side** mod: it goes in your own `mods` folder. The server only needs
-Simple Voice Chat, as usual.
+Simple Voice Chat, as usual. Other players only need Simple Voice Chat to hear it.
 
 ## Requirements
 
 | | |
 |---|---|
-| **Minecraft** | 26.3 · 1.20.1 |
-| **Loader** | Fabric, with Fabric API |
+| **Fabric** | 26.3 · 1.20.1 (needs Fabric API) |
+| **NeoForge** | 26.3 (NeoForge does not exist for 1.20.1) |
 | **Required mod** | **Simple Voice Chat**, on your game *and* the server |
 
 ## Using it
@@ -37,7 +37,15 @@ The key can be changed under Options > Controls > Key Binds > Miscellaneous.
 ## Building
 
 ```bash
+# Fabric
 tools/set_version.sh 26.3      # or 1.20.1
 ./gradlew build                # jar lands in build/libs/
+
+# NeoForge (26.3 only)
+./gradlew -p neoforge build    # jar lands in neoforge/build/libs/
+
 tools/run_tests.sh             # audio conversion tests, no Minecraft needed
 ```
+
+Almost all the code is shared. Only the small entrypoints differ:
+`src/main/java/com/example/soundboard/fabric/` for Fabric and `neoforge/src/` for NeoForge.

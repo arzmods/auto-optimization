@@ -1,7 +1,6 @@
 package com.example.soundboard;
 
 import com.mojang.blaze3d.Blaze3D;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,10 +17,9 @@ public final class McCompat {
     private McCompat() {
     }
 
-    /** A key in the Controls menu, under "Miscellaneous". */
-    public static KeyMapping registerKey(String name, int key) {
-        return KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(name, key, KeyMapping.Category.MISC));
+    /** A key for the Controls menu, under "Miscellaneous". The loader still has to register it. */
+    public static KeyMapping newKey(String name, int key) {
+        return new KeyMapping(name, key, KeyMapping.Category.MISC);
     }
 
     public static boolean hasScreenOpen(Minecraft minecraft) {

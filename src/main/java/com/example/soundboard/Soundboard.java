@@ -1,7 +1,6 @@
 package com.example.soundboard;
 
 import com.example.soundboard.audio.AudioLoader;
-import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +19,19 @@ public final class Soundboard {
     public static final String MOD_ID = "soundboardmc";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    private static Path gameDir;
+
     private Soundboard() {
     }
 
+    /** Called once by the loader entrypoint (Fabric or NeoForge) with the .minecraft folder. */
+    public static void init(Path minecraftDir) {
+        gameDir = minecraftDir;
+        songs(); // creates the folder on first launch so it is easy to find
+    }
+
     public static Path folder() {
-        return FabricLoader.getInstance().getGameDir().resolve("soundboard");
+        return gameDir.resolve("soundboard");
     }
 
     /** Every playable file in the folder, sorted by name. Creates the folder if needed. */

@@ -1,0 +1,41 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "soundboardmc"
+version = "${version}"
+displayName = "SoundboardMC"
+authors = "arzmods"
+iconFile = "assets/soundboardmc/icon.png"
+description = "Play songs from your computer into Simple Voice Chat, so you and everyone near you hear them. Press J."
+
+[[dependencies.soundboardmc]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoforge_version},)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.soundboardmc]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version},26.4)"
+ordering = "NONE"
+side = "CLIENT"
+
+# Simple Voice Chat names its own version like 2.6.24+26.3; the bundled API mod uses the
+# plain number, so the version check goes on that.
+[[dependencies.soundboardmc]]
+modId = "voicechat"
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.soundboardmc]]
+modId = "voicechat_api"
+type = "required"
+versionRange = "[2.5.0,)"
+ordering = "NONE"
+side = "CLIENT"

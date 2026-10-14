@@ -1,0 +1,9 @@
+// The NeoForge build is separate from the Fabric one (the root project), so the two
+// build plugins never share a classpath. Build it with:  ./gradlew -p neoforge build
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+		maven { url = uri("https://maven.neoforged.net/releases") }
+	}
+}
+rootProject.name = "soundboardmc-neoforge"

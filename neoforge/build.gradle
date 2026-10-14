@@ -1,0 +1,66 @@
+plugins {
+	id 'java'
+	id 'net.neoforged.moddev' version "${moddev_version}"
+}
+
+// Shared settings (mod version, voice chat API) live in the Fabric build's gradle.properties.
+def shared = new Properties()
+file("../gradle.properties").withInputStream { shared.load(it) }
+
+base.archivesName = "soundboardmc-neoforge"
+version = "${shared.mod_version}+${minecraft_version}"
+group = shared.maven_group
+
+repositories {
+	maven { url = uri("https://maven.maxhenkel.de/repository/public") }
+}
+
+neoForge {
+	version = neoforge_version
+	runs {
+		client {
+			client()
+		}
+	}
+	mods {
+		soundboardmc {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+dependencies {
+	// Simple Voice Chat provides this at runtime, so it must not be bundled.
+	compileOnly "de.maxhenkel.voicechat:voicechat-api:${shared.voicechat_api_version}"
+}
+
+// Everything except the Fabric entrypoint is shared with the Fabric build.
+sourceSets.main {
+	java {
+		srcDir "../src/main/java"
+		srcDir "../src/compat/modern/java"
+		exclude "com/example/soundboard/fabric/**"
+	}
+	resources {
+		srcDir "../src/main/resources"
+		exclude "fabric.mod.json"
+	}
+}
+
+def javaTarget = Integer.parseInt(java_version)
+
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(javaTarget)
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = javaTarget
+}
+
+processResources {
+	def props = [version: project.version, minecraft_version: minecraft_version, neoforge_version: neoforge_version]
+	inputs.properties props
+	filesMatching("META-INF/neoforge.mods.toml") {
+		expand props
+	}
+}

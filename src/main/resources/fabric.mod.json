@@ -11,7 +11,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.example.soundboard.SoundboardClient"
+      "com.example.soundboard.fabric.SoundboardFabric"
     ],
     "voicechat": [
       "com.example.soundboard.SoundboardPlugin"
