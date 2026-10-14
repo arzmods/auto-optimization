@@ -7,6 +7,7 @@
   "authors": [
     "arzmods"
   ],
+  "icon": "assets/soundboard/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
