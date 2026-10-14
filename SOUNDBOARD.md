@@ -1,4 +1,4 @@
-# Soundboard
+# SoundboardMC
 
 Play songs from your own computer into Simple Voice Chat. You hear them, and so does
 everyone near you who hears your voice.

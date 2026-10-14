@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "id": "soundboard",
+  "id": "soundboardmc",
   "version": "${version}",
-  "name": "Soundboard",
+  "name": "SoundboardMC",
   "description": "Play songs from your computer into Simple Voice Chat, so you and everyone near you hear them. Press J.",
   "authors": [
     "arzmods"
   ],
-  "icon": "assets/soundboard/icon.png",
+  "icon": "assets/soundboardmc/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [

@@ -24,7 +24,7 @@ public class SoundboardScreen extends Screen {
     private String shownStatus = "";
 
     public SoundboardScreen() {
-        super(Component.literal("Soundboard"));
+        super(Component.literal("SoundboardMC"));
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SoundboardScreen extends Screen {
 
         int center = width / 2;
         int y = 15;
-        addRenderableWidget(label("Soundboard  (page " + (page + 1) + "/" + pages + ")", y));
+        addRenderableWidget(label("SoundboardMC  (page " + (page + 1) + "/" + pages + ")", y));
         y += 14;
         shownStatus = statusText();
         statusLabel = addRenderableWidget(label(shownStatus, y));

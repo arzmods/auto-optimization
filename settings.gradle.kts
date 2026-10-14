@@ -4,4 +4,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = "soundboard"
+rootProject.name = "soundboardmc"

@@ -15,6 +15,6 @@ jobs:
       - name: Upload Finished Jar File
         uses: actions/upload-artifact@v4
         with:
-          name: soundboard-mod
+          name: soundboardmc-mod
           path: build/libs/*.jar
         

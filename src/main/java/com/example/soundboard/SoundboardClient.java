@@ -12,7 +12,7 @@ public class SoundboardClient implements ClientModInitializer {
     public void onInitializeClient() {
         Soundboard.songs(); // creates the folder on first launch so it is easy to find
 
-        KeyMapping open = McCompat.registerKey("key.soundboard.open", InputConstants.KEY_J);
+        KeyMapping open = McCompat.registerKey("key.soundboardmc.open", InputConstants.KEY_J);
         ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
             while (open.consumeClick()) {
                 if (!McCompat.hasScreenOpen(minecraft)) {

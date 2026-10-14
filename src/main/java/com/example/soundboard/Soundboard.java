@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 /** Where songs live: a "soundboard" folder next to mods/ and config/. */
 public final class Soundboard {
 
-    public static final String MOD_ID = "soundboard";
+    public static final String MOD_ID = "soundboardmc";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private Soundboard() {
